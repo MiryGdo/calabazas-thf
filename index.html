@@ -1,0 +1,875 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Registro de Calabazas · The Halfling's Finds</title>
+<meta name="theme-color" content="#E9EAE1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=IBM+Plex+Mono:wght@500;600&family=IBM+Plex+Sans:wght@400;500;600&family=Bodoni+Moda:opsz,wght@6..96,400;6..96,500&family=Cormorant+Garamond:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --papel:#E9EAE1; --papel-alto:#F5F5EF; --tinta:#1E2A2E; --tinta-suave:#5A6A6E;
+  --linea:#C7CABB; --kraft:#C9A47A; --mostaza:#DFA22B; --salvia:#7E9276; --ladrillo:#B0503A;
+  --sello:#A8442B; --troquel:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='100' height='12'><rect x='0' y='0' width='100' height='12' fill='black'/><circle cx='0' cy='6' r='4.2' fill='white'/><circle cx='100' cy='6' r='4.2' fill='white'/></svg>");
+  --r:10px; --sombra:0 1px 2px rgba(30,42,46,.08), 0 6px 20px rgba(30,42,46,.06);
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{background:var(--papel);color:var(--tinta);font-family:'IBM Plex Sans',system-ui,-apple-system,sans-serif;
+ font-size:16px;line-height:1.5;-webkit-text-size-adjust:100%;padding-bottom:96px}
+.wrap{max-width:600px;margin:0 auto;padding:0 14px}
+h1,h2,h3{font-family:'Fraunces',Georgia,serif;font-weight:700;margin:0}
+.mono{font-family:'IBM Plex Mono',ui-monospace,monospace}
+
+header{position:sticky;top:0;z-index:30;background:var(--papel);border-bottom:1px solid var(--linea)}
+.topbar{max-width:600px;margin:0 auto;padding:10px 14px;display:flex;align-items:center;gap:10px}
+.marca{font-family:'Fraunces',serif;font-weight:700;font-size:15px;flex:1;min-width:0}
+.marca small{display:block;font-family:'IBM Plex Sans',sans-serif;font-weight:400;font-size:11px;
+ color:var(--tinta-suave);letter-spacing:.06em;text-transform:uppercase}
+.tabs{display:flex;gap:4px;background:#DEE0D5;padding:3px;border-radius:999px}
+.tabs button{border:0;background:transparent;color:var(--tinta-suave);font:600 13px 'IBM Plex Sans',sans-serif;
+ padding:6px 13px;border-radius:999px;cursor:pointer}
+.tabs button[aria-selected="true"]{background:var(--papel-alto);color:var(--tinta);box-shadow:0 1px 2px rgba(0,0,0,.1)}
+.estado-nube{max-width:600px;margin:0 auto;padding:0 14px 8px;display:flex;align-items:center;gap:7px;font-size:12px;color:var(--tinta-suave)}
+.punto{width:8px;height:8px;border-radius:50%;background:var(--tinta-suave);flex:0 0 auto}
+.punto.ok{background:var(--salvia)}
+.punto.pend{background:var(--mostaza)}
+.punto.mal{background:var(--ladrillo)}
+.estado-nube button{margin-left:auto;background:transparent;border:1px solid var(--linea);border-radius:7px;
+ padding:4px 10px;font:500 12px 'IBM Plex Sans';cursor:pointer;color:var(--tinta)}
+
+.boleto{
+  position:relative;margin:16px 0 22px;display:flex;min-height:162px;
+  background:#F3EAD6;
+  background-image:
+    radial-gradient(circle at 18% 26%, rgba(168,140,96,.13) 0 34%, transparent 35%),
+    radial-gradient(circle at 76% 74%, rgba(168,140,96,.11) 0 26%, transparent 27%),
+    radial-gradient(circle at 46% 90%, rgba(150,120,80,.09) 0 22%, transparent 23%);
+  color:var(--sello);
+  filter:drop-shadow(0 2px 3px rgba(30,42,46,.14)) drop-shadow(0 10px 22px rgba(30,42,46,.10));
+  -webkit-mask-image:var(--troquel);mask-image:var(--troquel);
+  -webkit-mask-size:100% 11px;mask-size:100% 11px;
+  -webkit-mask-repeat:repeat-y;mask-repeat:repeat-y;
+  border-radius:3px;
+}
+.bt-cuerpo{flex:1;min-width:0;padding:17px 62px 15px 20px;display:flex;flex-direction:column;justify-content:center;position:relative}
+.bt-cuerpo::before{
+  content:"";position:absolute;inset:9px 6px 9px 11px;border:1px solid var(--sello);border-radius:7px;
+  opacity:.7;pointer-events:none;
+}
+.bt-marca{font:400 9.5px 'Cormorant Garamond',Georgia,serif;letter-spacing:.26em;text-transform:uppercase;opacity:.72;margin-bottom:6px}
+.bt-codigo{font-family:'Bodoni Moda','Didot','Bodoni MT',Georgia,serif;font-weight:400;font-size:clamp(32px,9.2vw,45px);line-height:1.02;letter-spacing:.055em;word-break:break-all}
+.bt-codigo.esperando{opacity:.34}
+.bt-medida{font:500 13px 'Cormorant Garamond',Georgia,serif;letter-spacing:.09em;text-transform:uppercase;margin-top:5px;min-height:17px;opacity:.9;position:relative;z-index:1}
+.bt-puerta{position:absolute;right:14px;bottom:11px;width:50px;opacity:.3;pointer-events:none}
+
+.bt-corte{
+  width:2px;align-self:stretch;flex:0 0 auto;
+  background:radial-gradient(circle, var(--sello) 0 42%, transparent 43%) 0 0/2px 7px repeat-y;
+  opacity:.65;
+}
+.bt-talon{
+  flex:0 0 108px;padding:16px 10px;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;text-align:center;position:relative;
+}
+.bt-talon::before{content:"";position:absolute;inset:9px 11px 9px 6px;border:1px solid var(--sello);border-radius:7px;opacity:.7;pointer-events:none}
+.bt-sigla{font-family:'Bodoni Moda','Didot','Bodoni MT',Georgia,serif;font-weight:400;font-size:29px;line-height:1;letter-spacing:.1em;text-indent:.1em}
+.bt-regla{width:64px;height:10px;margin:9px 0;position:relative;opacity:.85}
+.bt-regla::before{content:"";position:absolute;top:4.5px;left:0;right:0;height:1px;background:var(--sello)}
+.bt-regla::after{content:"";position:absolute;top:2px;left:50%;margin-left:-3px;width:6px;height:6px;border-radius:50%;background:var(--sello)}
+.bt-num{font-family:'Bodoni Moda','Didot','Bodoni MT',Georgia,serif;font-weight:400;font-size:30px;line-height:1;letter-spacing:.06em;text-indent:.06em;white-space:nowrap}
+.bt-precio{font:500 13px 'Cormorant Garamond',Georgia,serif;margin-top:8px;letter-spacing:.07em;opacity:.85}
+@keyframes sello{0%{transform:scale(1)}35%{transform:scale(.955) rotate(-.7deg)}100%{transform:scale(1)}}
+
+.tarjeta{background:var(--papel-alto);border:1px solid var(--linea);border-radius:var(--r);padding:14px;
+ margin-bottom:12px;box-shadow:var(--sombra)}
+.tarjeta > h2{font-size:13px;letter-spacing:.03em;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.tarjeta > h2::after{content:"";flex:1;height:1px;background:var(--linea)}
+.op{font:400 11px 'IBM Plex Sans',sans-serif;color:var(--tinta-suave);text-transform:none;letter-spacing:0}
+.plegable > summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:8px;
+ font-family:'Fraunces',Georgia,serif;font-weight:700;font-size:13px;letter-spacing:.03em}
+.plegable > summary::-webkit-details-marker{display:none}
+.plegable > summary::after{content:"";flex:1;height:1px;background:var(--linea)}
+.flecha{width:11px;height:11px;flex:0 0 auto;border-right:1.8px solid var(--tinta-suave);
+ border-bottom:1.8px solid var(--tinta-suave);transform:rotate(45deg);margin:-4px 2px 0 0;transition:transform .18s ease}
+.plegable[open] > summary .flecha{transform:rotate(-135deg);margin-top:2px}
+.marca-op{font:500 10px 'IBM Plex Sans',sans-serif;letter-spacing:.06em;text-transform:uppercase;
+ background:#DEE0D5;color:var(--tinta-suave);padding:2px 8px;border-radius:999px;flex:0 0 auto}
+.marca-op.lleno{background:#DCE7D6;color:#40603A}
+.cuerpo-plegable{padding-top:13px}
+.campo{margin-bottom:11px}
+.campo:last-child{margin-bottom:0}
+label{display:block;font-size:11px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;
+ color:var(--tinta-suave);margin-bottom:4px}
+input,select,textarea{width:100%;font:400 16px 'IBM Plex Sans',sans-serif;color:var(--tinta);background:#fff;
+ border:1px solid var(--linea);border-radius:8px;padding:10px 11px;-webkit-appearance:none;appearance:none}
+select{background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='8'><path d='M1 1l5 5 5-5' stroke='%235A6A6E' stroke-width='1.8' fill='none' stroke-linecap='round'/></svg>");
+ background-repeat:no-repeat;background-position:right 11px center;padding-right:32px}
+input:focus,select:focus,textarea:focus{outline:2px solid var(--mostaza);outline-offset:1px;border-color:var(--mostaza)}
+textarea{min-height:64px;resize:vertical}
+.fila{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.fila3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:9px}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chips input{position:absolute;opacity:0;pointer-events:none;width:0;height:0}
+.chips label{margin:0;padding:8px 13px;border:1px solid var(--linea);border-radius:999px;background:#fff;
+ font:500 13px 'IBM Plex Sans',sans-serif;text-transform:none;letter-spacing:0;color:var(--tinta);cursor:pointer;user-select:none}
+.chips input:checked + label{background:var(--tinta);color:var(--papel-alto);border-color:var(--tinta)}
+.chips input:focus-visible + label{outline:2px solid var(--mostaza);outline-offset:2px}
+.foto{border:2px dashed var(--linea);border-radius:var(--r);background:#fff;min-height:150px;display:flex;
+ flex-direction:column;align-items:center;justify-content:center;gap:6px;color:var(--tinta-suave);font-size:14px;
+ cursor:pointer;text-align:center;padding:16px;position:relative;overflow:hidden}
+.foto img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.foto .quitar{position:absolute;top:8px;right:8px;z-index:2;background:rgba(30,42,46,.85);color:#fff;border:0;
+ border-radius:999px;padding:6px 12px;font:600 12px 'IBM Plex Sans';cursor:pointer}
+.foto svg{opacity:.5}
+.barra{position:fixed;left:0;right:0;bottom:0;z-index:40;
+ background:linear-gradient(to top,var(--papel) 72%,rgba(233,234,225,0));
+ padding:12px 14px calc(12px + env(safe-area-inset-bottom))}
+.barra-in{max-width:600px;margin:0 auto;display:flex;gap:9px}
+.btn{flex:1;border:0;border-radius:10px;padding:14px 12px;cursor:pointer;font:600 15px 'IBM Plex Sans',sans-serif}
+.btn-primario{background:var(--tinta);color:var(--papel-alto);box-shadow:var(--sombra)}
+.btn-primario:active{transform:translateY(1px)}
+.btn-sec{flex:0 0 auto;background:var(--papel-alto);color:var(--tinta);border:1px solid var(--linea)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.contadores{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
+.cont{background:var(--papel-alto);border:1px solid var(--linea);border-radius:8px;padding:6px 10px;font-size:12px;color:var(--tinta-suave)}
+.cont b{font-family:'IBM Plex Mono',monospace;color:var(--tinta);font-size:14px}
+.pieza{display:flex;gap:11px;align-items:center;background:var(--papel-alto);border:1px solid var(--linea);
+ border-radius:var(--r);padding:9px;margin-bottom:8px}
+.pieza img,.pieza .sinfoto{width:60px;height:60px;border-radius:7px;object-fit:cover;flex:0 0 auto;background:#DEE0D5}
+.pieza .sinfoto{display:flex;align-items:center;justify-content:center;color:var(--tinta-suave);font-size:10px;text-align:center;padding:4px}
+.pieza .info{flex:1;min-width:0}
+.pieza .cod{font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:15px}
+.pieza .desc{font-size:12.5px;color:var(--tinta-suave);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pieza .acc{display:flex;flex-direction:column;gap:4px}
+.mini{background:transparent;border:1px solid var(--linea);border-radius:7px;padding:5px 9px;
+ font:500 12px 'IBM Plex Sans';cursor:pointer;color:var(--tinta)}
+.mini.rojo{color:var(--ladrillo);border-color:#DCC0B8}
+.estado-pin{display:inline-block;font-size:10px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;
+ padding:2px 7px;border-radius:999px;background:#DEE0D5;color:var(--tinta-suave);margin-left:6px;vertical-align:2px}
+.pin-pend{background:#F6E3B8;color:#7A5A12}
+.vacio{text-align:center;padding:44px 20px;color:var(--tinta-suave)}
+.vacio h3{font-size:17px;margin-bottom:6px;color:var(--tinta)}
+.aviso{background:#F6E3B8;border:1px solid #DFA22B;border-radius:8px;padding:10px 12px;font-size:13px;margin:12px 0}
+.aviso.malo{background:#F2DCD6;border-color:var(--ladrillo)}
+.nota{font-size:12px;color:var(--tinta-suave);margin-top:6px}
+.oculto{display:none !important}
+.acciones-exp{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:4px}
+.acciones-exp .btn{font-size:14px;padding:12px}
+.toast{position:fixed;left:50%;bottom:92px;transform:translateX(-50%) translateY(10px);background:var(--tinta);
+ color:var(--papel-alto);padding:11px 18px;border-radius:999px;font:500 14px 'IBM Plex Sans';z-index:60;opacity:0;
+ pointer-events:none;transition:all .25s ease;max-width:88vw;text-align:center}
+.toast.ver{opacity:1;transform:translateX(-50%) translateY(0)}
+@media (prefers-reduced-motion:reduce){*{animation:none !important;transition:none !important}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="topbar">
+    <div class="marca">Registro de calabazas<small>The Halfling's Finds</small></div>
+    <div class="tabs" role="tablist">
+      <button role="tab" id="tab-cap" aria-selected="true" onclick="verVista('captura')">Capturar</button>
+      <button role="tab" id="tab-inv" aria-selected="false" onclick="verVista('inventario')">Inventario</button>
+    </div>
+  </div>
+  <div class="estado-nube">
+    <span class="punto" id="punto"></span>
+    <span id="txt-nube">Sin conectar</span>
+    <button id="btn-sync" onclick="sincronizar(true)">Sincronizar</button>
+  </div>
+</header>
+
+<main class="wrap">
+
+<!-- ============ CAPTURA ============ -->
+<section id="v-captura">
+
+  <div class="boleto" id="colgante">
+    <div class="bt-cuerpo">
+      <div class="bt-marca">The Halfling's Finds · Calabaza tejida</div>
+      <div class="bt-codigo esperando" id="cod-vista">26-—000</div>
+      <div class="bt-medida" id="cod-desc">Elige un tamaño para asignar el código</div>
+      <svg class="bt-puerta" viewBox="0 0 60 46" fill="none" stroke="currentColor" stroke-width="1.15" aria-hidden="true">
+        <circle cx="22" cy="17" r="12"/>
+        <path d="M22 5v24M10 17h24M16 7.5v19M28 7.5v19" stroke-width="0.8"/>
+        <circle cx="25.5" cy="17" r="1.3" fill="currentColor" stroke="none"/>
+        <path d="M6 29h32" stroke-width="1.15"/>
+        <path d="M22 30c-8 4-12 8-4 11s4 5-4 5" stroke-dasharray="2.2 3.6" stroke-width="1"/>
+      </svg>
+    </div>
+    <div class="bt-corte"></div>
+    <div class="bt-talon">
+      <div class="bt-sigla">THF</div>
+      <div class="bt-regla"></div>
+      <div class="bt-num" id="talon-cod">—</div>
+      <div class="bt-precio" id="talon-precio">—</div>
+    </div>
+  </div>
+
+  <div id="aviso-memoria" class="aviso oculto">
+    <b>Modo de prueba.</b> Este navegador no está guardando nada. Abre la app desde su dirección de internet para que el registro se conserve.
+  </div>
+
+  <div class="tarjeta">
+    <h2>Foto</h2>
+    <input type="file" id="in-foto" accept="image/*" capture="environment" class="oculto">
+    <div class="foto" id="zona-foto" onclick="document.getElementById('in-foto').click()">
+      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 8a2 2 0 012-2h2.5l1.2-2h6.6l1.2 2H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V8z"/><circle cx="12" cy="12.5" r="3.5"/></svg>
+      <span>Tomar foto de la calabaza</span>
+    </div>
+    <div class="nota">Se guarda comprimida y se sube a la nube con el nombre del código.</div>
+  </div>
+
+  <div class="tarjeta">
+    <h2>Identidad</h2>
+    <div class="campo"><label>Tamaño</label><div class="chips" id="chips-tamano"></div></div>
+    <div class="fila">
+      <div class="campo"><label for="f-color">Color</label><select id="f-color"></select></div>
+      <div class="campo"><label for="f-textura">Textura</label><select id="f-textura"></select></div>
+    </div>
+    <div class="campo">
+      <label for="f-codigo">Código asignado</label>
+      <input type="text" id="f-codigo" class="mono" placeholder="se asigna solo">
+      <div class="nota">Sale del siguiente consecutivo de ese tamaño, contando lo que ya hay en la nube. Puedes corregirlo a mano.</div>
+    </div>
+  </div>
+
+  <div class="tarjeta">
+    <h2>Adornos y forma</h2>
+    <div class="fila">
+      <div class="campo"><label for="f-madronos">¿Lleva madroños?</label><select id="f-madronos"><option>NO</option><option>SÍ</option></select></div>
+      <div class="campo"><label for="f-gajos">Gajos</label><input type="number" id="f-gajos" inputmode="numeric" min="1" max="30" placeholder="8"></div>
+    </div>
+    <div class="fila">
+      <div class="campo"><label for="f-rabo">Tipo de rabo</label><select id="f-rabo"></select></div>
+      <div class="campo"><label for="f-hojas">Hojas</label><select id="f-hojas"></select></div>
+    </div>
+    <div class="fila">
+      <div class="campo"><label for="f-rafia">Rafia</label><select id="f-rafia"><option>NO</option><option>SÍ</option></select></div>
+      <div class="campo"><label for="f-flores">Flores o bayas</label><select id="f-flores"><option>NO</option><option>SÍ</option></select></div>
+    </div>
+  </div>
+
+  <details class="tarjeta plegable" id="pleg-med">
+    <summary><span class="flecha"></span>Medidas reales<span class="marca-op" id="sello-med">Opcional</span></summary>
+    <div class="cuerpo-plegable">
+    <div class="nota" style="margin:0 0 11px">En centímetros. Sirven para saber cuánto varía cada talla de verdad.</div>
+    <div class="fila3">
+      <div class="campo"><label for="f-diam">Base</label><input type="number" step="0.5" inputmode="decimal" id="f-diam" placeholder="8"></div>
+      <div class="campo"><label for="f-alt">Altura</label><input type="number" step="0.5" inputmode="decimal" id="f-alt" placeholder="8.5"></div>
+      <div class="campo"><label for="f-circ">Contorno</label><input type="number" step="0.5" inputmode="decimal" id="f-circ" placeholder="26"></div>
+    </div>
+    </div>
+  </details>
+
+  <details class="tarjeta plegable" id="pleg-prod">
+    <summary><span class="flecha"></span>Producción y costo<span class="marca-op" id="sello-prod">Opcional</span></summary>
+    <div class="cuerpo-plegable">
+    <div class="nota" style="margin:0 0 11px">Déjalo vacío si no lo tienes a la mano. La pieza se guarda igual; el Excel calcula el costo solo con lo que llenes.</div>
+    <div class="fila">
+      <div class="campo"><label for="f-tejedora">Tejedora</label><select id="f-tejedora"></select></div>
+      <div class="campo"><label for="f-fprod">Fecha de producción</label><input type="date" id="f-fprod"></div>
+    </div>
+    <div class="fila">
+      <div class="campo"><label for="f-marca">Marca de hilo</label><select id="f-marca"></select></div>
+      <div class="campo"><label for="f-colorhilo">Color exacto del hilo</label><input type="text" id="f-colorhilo" placeholder="Mostaza 1042"></div>
+    </div>
+    <div class="fila3">
+      <div class="campo"><label for="f-madejas">Madejas</label><input type="number" step="0.1" inputmode="decimal" id="f-madejas" placeholder="0.6"></div>
+      <div class="campo"><label for="f-costomadeja">$ madeja</label><input type="number" step="0.5" inputmode="decimal" id="f-costomadeja" placeholder="75"></div>
+      <div class="campo"><label for="f-relleno">$ relleno</label><input type="number" step="0.5" inputmode="decimal" id="f-relleno" placeholder="18"></div>
+    </div>
+    <div class="campo"><label for="f-adornos">$ adornos</label><input type="number" step="0.5" inputmode="decimal" id="f-adornos" placeholder="15"></div>
+    </div>
+  </details>
+
+  <div class="tarjeta">
+    <h2>Destino y venta <span class="op">se conserva entre piezas</span></h2>
+    <div class="fila">
+      <div class="campo"><label for="f-estado">Estado</label><select id="f-estado"></select></div>
+      <div class="campo"><label for="f-canal">Canal o ubicación</label><select id="f-canal"></select></div>
+    </div>
+    <div class="fila3">
+      <div class="campo"><label for="f-fasig">Asignada el</label><input type="date" id="f-fasig"></div>
+      <div class="campo"><label for="f-fventa">Vendida el</label><input type="date" id="f-fventa"></div>
+      <div class="campo"><label for="f-precio">$ venta</label><input type="number" step="1" inputmode="decimal" id="f-precio"></div>
+    </div>
+    <div class="campo"><label for="f-notas">Notas</label><textarea id="f-notas" placeholder="Ej: registro retroactivo, pieza de la temporada pasada"></textarea></div>
+  </div>
+
+  <div class="tarjeta">
+    <h2>Ajustes de captura</h2>
+    <div class="fila">
+      <div class="campo">
+        <label for="f-temporada">Temporada del código</label>
+        <select id="f-temporada"><option value="26">26 · temporada 2026</option><option value="25">25 · piezas del año pasado</option></select>
+      </div>
+      <div class="campo">
+        <label for="f-repetir">Al guardar</label>
+        <select id="f-repetir"><option value="si">Conservar producción y destino</option><option value="no">Limpiar todo el formulario</option></select>
+      </div>
+    </div>
+    <div class="nota">Cambia la temporada a <b>25</b> para dar de alta las calabazas que sobraron del año pasado.</div>
+  </div>
+
+</section>
+
+<!-- ============ INVENTARIO ============ -->
+<section id="v-inventario" class="oculto">
+  <div class="contadores" id="contadores"></div>
+  <div class="campo" style="margin-bottom:10px">
+    <input type="search" id="f-buscar" placeholder="Buscar por código, color o textura" oninput="pintarLista()">
+  </div>
+  <div id="lista"></div>
+
+  <div class="tarjeta">
+    <h2>Conexión con la nube</h2>
+    <div id="caja-login">
+      <div class="campo"><label for="c-url">Dirección del proyecto (Project URL)</label><input type="url" id="c-url" placeholder="https://xxxxx.supabase.co" autocomplete="off"></div>
+      <div class="campo"><label for="c-key">Llave pública (anon key)</label><input type="text" id="c-key" placeholder="eyJhbGciOi..." autocomplete="off"></div>
+      <div class="campo"><label for="c-mail">Tu correo</label><input type="email" id="c-mail" autocomplete="username"></div>
+      <div class="campo"><label for="c-pass">Tu contraseña</label><input type="password" id="c-pass" autocomplete="current-password"></div>
+      <button class="btn btn-primario" style="width:100%" onclick="entrar()">Conectar</button>
+      <div class="nota">Estos datos se guardan solo en este dispositivo. La dirección y la llave las encuentras en Supabase, en Project Settings → API.</div>
+    </div>
+    <div id="caja-sesion" class="oculto">
+      <p style="margin:0 0 10px;font-size:14px">Conectada como <b id="txt-mail" class="mono"></b></p>
+      <div class="acciones-exp">
+        <button class="btn btn-sec" onclick="sincronizar(true)">Sincronizar ahora</button>
+        <button class="btn btn-sec" onclick="salir()">Cerrar sesión</button>
+      </div>
+      <div class="nota" id="txt-ultima"></div>
+    </div>
+  </div>
+
+  <div class="tarjeta">
+    <h2>Exportar</h2>
+    <div class="acciones-exp">
+      <button class="btn btn-primario" onclick="exportarExcel()">Descargar Excel</button>
+      <button class="btn btn-sec" onclick="exportarFotos()">Descargar fotos</button>
+      <button class="btn btn-sec" onclick="respaldar()">Crear respaldo</button>
+      <button class="btn btn-sec" onclick="document.getElementById('in-respaldo').click()">Cargar respaldo</button>
+    </div>
+    <input type="file" id="in-respaldo" accept=".json" class="oculto">
+    <div class="nota">El Excel sale con las columnas del Maestro de Piezas en el mismo orden, listo para pegar.</div>
+  </div>
+</section>
+
+</main>
+
+<div class="barra" id="barra-captura">
+  <div class="barra-in">
+    <button class="btn btn-sec" onclick="limpiarTodo()">Limpiar</button>
+    <button class="btn btn-primario" id="btn-guardar" onclick="guardarPieza()">Guardar y capturar otra</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ===================== catálogos ===================== */
+const TAMANOS=[
+ {t:'0',l:'A',cm:'5 cm',pub:55},{t:'1',l:'B',cm:'8 cm',pub:100},{t:'2',l:'C',cm:'9 cm',pub:130},
+ {t:'3',l:'D',cm:'12 cm',pub:145},{t:'4',l:'E',cm:'14 cm',pub:255},{t:'5',l:'F',cm:'18 cm',pub:400},
+ {t:'6',l:'G',cm:'25 cm',pub:520},{t:'7',l:'H',cm:'32 cm',pub:920},{t:'8',l:'I',cm:'36 cm',pub:1200},
+ {t:'JUEGO DE 3',l:'J',cm:'juego',pub:1320}];
+const COLORES=[
+ ['BLANCO','BLANCOS Y CRUDOS'],['HUESO','BLANCOS Y CRUDOS'],['CRUDO','BLANCOS Y CRUDOS'],
+ ['ARENA','NEUTROS CÁLIDOS'],['PAJA','NEUTROS CÁLIDOS'],['BEIGE','NEUTROS CÁLIDOS'],['CAMEL','NEUTROS CÁLIDOS'],
+ ['TOPO','GRISES Y NEGROS'],['GRIS','GRISES Y NEGROS'],['NEGRO','GRISES Y NEGROS'],
+ ['MOSTAZA','AMARILLOS Y MOSTAZAS'],['ORO','AMARILLOS Y MOSTAZAS'],['AMARILLO','AMARILLOS Y MOSTAZAS'],
+ ['NARANJA','NARANJAS'],['MANDARINA','NARANJAS'],['DURAZNO','NARANJAS'],['CALABAZA','NARANJAS'],
+ ['LADRILLO','TERRACOTA Y LADRILLO'],['TERRACOTA','TERRACOTA Y LADRILLO'],['CANELA','TERRACOTA Y LADRILLO'],
+ ['OLIVO','VERDES'],['SALVIA','VERDES'],['VERDE CRISTAL','VERDES'],
+ ['AZUL NÓRDICO','AZULES'],['AZUL CIELO','AZULES'],
+ ['LAVANDA','ROSAS Y VINOS'],['VINO','ROSAS Y VINOS'],['ROSA','ROSAS Y VINOS'],
+ ['JASPEADO','MULTICOLOR'],['MOTAS','MULTICOLOR']];
+const TEXTURAS=['PUNTO LISO','PUNTO ARROZ','CANALÉ','MADROÑOS','TRENZAS','CALADO','MOTAS BORDADAS','MIXTA'];
+const RABOS=['CANELA','RAMA NATURAL','TEJIDO','MADERA','SIN RABO'];
+const HOJAS=['NINGUNA','PLÁSTICO','TELA','FIELTRO'];
+const CANALES=['ALMACÉN','VENTA DIRECTA','BAZAR','ALLEGRA','MARILÚ','OTHILA CDMX','PALO SANTO CDMX','ESPACIO ABIERTO','TIENDA'];
+const ESTADOS=['EN ALMACÉN','EN PRODUCCIÓN','ASIGNADA','VENDIDA','DEVUELTA','DAÑADA','REGALADA'];
+const TEJEDORAS=['MIRY','LIZ','MÁRGARA','MAGGY','LIZBETH','EXTERNA'];
+const HILOS=['SINFONÍA','KARTOPU','HEARTLAND','VICTORIA','KUKU','VELLUTO','LA ABUELITA','OTRO'];
+const CABECERAS=['ETIQUETA','AÑO','TIPO','LETRA','COLOR','FAMILIA DE COLOR','TEXTURA','MADROÑOS','GAJOS','TIPO DE RABO','HOJAS','RAFIA','FLORES O BAYAS','DIÁM. BASE REAL (CM)','ALTURA REAL (CM)','CIRCUNF. REAL (CM)','TEJEDORA','FECHA DE PRODUCCIÓN','MARCA DE HILO','COLOR EXACTO DEL HILO','MADEJAS','COSTO POR MADEJA','COSTO DE HILO','COSTO DE RELLENO','COSTO DE ADORNOS','PUNTOS','COSTO MANO DE OBRA','COSTO TOTAL','PRECIO PÚBLICO SUGERIDO','MARGEN SUGERIDO','ESTADO','CANAL / UBICACIÓN','FECHA DE ASIGNACIÓN','FECHA DE VENTA','PRECIO REAL DE VENTA','DÍAS EN PISO','MARGEN REAL','NOTAS'];
+
+/* ===================== estado ===================== */
+let piezas=[], borradas=[], db=null, modoMemoria=false, editando=null, fotoActual=null;
+let cfg={url:'',key:''}, sesion=null, sincronizando=false, ultimaSync=null, relojSync=null;
+
+const $=id=>document.getElementById(id);
+const guardarLocal=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}};
+const leerLocal=k=>{try{return JSON.parse(localStorage.getItem(k))}catch(e){return null}};
+
+/* ===================== almacenamiento local ===================== */
+function abrirDB(){
+  return new Promise(res=>{
+    let p; try{p=indexedDB.open('calabazas_thf',2)}catch(e){return res(null)}
+    p.onupgradeneeded=e=>{const d=e.target.result; if(!d.objectStoreNames.contains('piezas')) d.createObjectStore('piezas',{keyPath:'etiqueta'});};
+    p.onsuccess=e=>res(e.target.result);
+    p.onerror=()=>res(null);
+    setTimeout(()=>res(null),2500);
+  });
+}
+async function cargarLocales(){
+  db=await abrirDB();
+  if(!db){modoMemoria=true; $('aviso-memoria').classList.remove('oculto'); return;}
+  await new Promise(res=>{
+    const r=db.transaction('piezas').objectStore('piezas').getAll();
+    r.onsuccess=()=>{piezas=r.result||[];res()}; r.onerror=()=>res();
+  });
+}
+function persistir(p){ if(db){try{db.transaction('piezas','readwrite').objectStore('piezas').put(p)}catch(e){}} }
+function quitarDeDB(et){ if(db){try{db.transaction('piezas','readwrite').objectStore('piezas').delete(et)}catch(e){}} }
+
+/* ===================== utilidades ===================== */
+function llenar(sel,arr,ini){const s=$(sel);s.innerHTML='';arr.forEach(v=>{const o=document.createElement('option');o.value=v;o.textContent=v;s.appendChild(o)});if(ini!==undefined)s.value=ini;}
+const familiaDe=c=>{const f=COLORES.find(x=>x[0]===c);return f?f[1]:''};
+const datosTam=t=>TAMANOS.find(x=>x.t===t);
+function toast(m){const t=$('toast');t.textContent=m;t.classList.add('ver');clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove('ver'),2600);}
+function hoyISO(){const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+const num=v=>{const n=parseFloat(v);return isNaN(n)?null:n};
+const txt=v=>(v===null||v===undefined)?'':v;
+
+/* ===================== código consecutivo ===================== */
+function siguienteCodigo(tipo){
+  const d=datosTam(tipo); if(!d) return '';
+  const pre=$('f-temporada').value+'-'+d.l;
+  let max=0;
+  piezas.forEach(p=>{
+    if(editando && p.etiqueta===editando) return;
+    if(typeof p.etiqueta==='string' && p.etiqueta.startsWith(pre)){
+      const n=parseInt(p.etiqueta.slice(pre.length),10);
+      if(!isNaN(n)&&n>max) max=n;
+    }
+  });
+  return pre+String(max+1).padStart(3,'0');
+}
+const tamanoElegido=()=>{const r=document.querySelector('input[name="tam"]:checked');return r?r.value:null};
+function refrescarCodigo(){
+  const tipo=tamanoElegido();
+  if(!tipo){
+    $('cod-vista').textContent=$('f-temporada').value+'-—000';
+    $('cod-vista').classList.add('esperando');
+    $('cod-desc').textContent='Elige un tamaño para asignar el código';
+    $('talon-cod').textContent='—'; $('talon-precio').textContent='—'; return;
+  }
+  const d=datosTam(tipo);
+  if(!editando) $('f-codigo').value=siguienteCodigo(tipo);
+  const cod=$('f-codigo').value||siguienteCodigo(tipo);
+  $('cod-vista').textContent=cod;
+  $('cod-vista').classList.remove('esperando');
+  $('cod-desc').textContent='Tipo '+tipo+' · '+d.cm+' de base';
+  $('talon-cod').textContent=d.l+' '+cod.slice(-3);
+  $('talon-precio').textContent='$'+d.pub.toLocaleString('es-MX');
+}
+
+/* ===================== formulario ===================== */
+function construir(){
+  const cont=$('chips-tamano');
+  TAMANOS.forEach((t,i)=>{
+    const id='tam-'+i;
+    const inp=document.createElement('input');
+    inp.type='radio';inp.name='tam';inp.id=id;inp.value=t.t;
+    inp.addEventListener('change',refrescarCodigo);
+    const lab=document.createElement('label');
+    lab.htmlFor=id;lab.textContent=(t.t==='JUEGO DE 3'?'Juego':'Tipo '+t.t)+' · '+t.cm;
+    cont.appendChild(inp);cont.appendChild(lab);
+  });
+  llenar('f-color',COLORES.map(c=>c[0]),'MOSTAZA');
+  llenar('f-textura',TEXTURAS,'PUNTO LISO');
+  llenar('f-rabo',RABOS,'CANELA');
+  llenar('f-hojas',HOJAS,'NINGUNA');
+  llenar('f-tejedora',[''].concat(TEJEDORAS),'');
+  llenar('f-marca',[''].concat(HILOS),'');
+  $('f-tejedora').options[0].textContent='— sin registrar —';
+  $('f-marca').options[0].textContent='— sin registrar —';
+  llenar('f-canal',CANALES,'ALMACÉN');
+  llenar('f-estado',ESTADOS,'EN ALMACÉN');
+  $('f-temporada').addEventListener('change',()=>{if(!editando)refrescarCodigo()});
+  $('f-codigo').addEventListener('input',()=>{
+    const v=$('f-codigo').value;
+    $('cod-vista').textContent=v||'—';
+    $('cod-vista').classList.toggle('esperando',!v);
+    $('talon-cod').textContent=v?(v.slice(3,4)+' '+v.slice(-3)):'—';
+  });
+}
+
+function revisarPlegables(){
+  const prod=['f-tejedora','f-fprod','f-marca','f-colorhilo','f-madejas','f-costomadeja','f-relleno','f-adornos']
+    .some(i=>($(i).value||'').trim()!=='');
+  const med=['f-diam','f-alt','f-circ'].some(i=>($(i).value||'').trim()!=='');
+  $('sello-prod').textContent = prod?'Con datos':'Opcional';
+  $('sello-prod').classList.toggle('lleno',prod);
+  $('sello-med').textContent  = med?'Con datos':'Opcional';
+  $('sello-med').classList.toggle('lleno',med);
+}
+['pleg-prod','pleg-med'].forEach(id=>{
+  $(id).addEventListener('input',revisarPlegables);
+  $(id).addEventListener('change',revisarPlegables);
+});
+
+/* ===================== foto ===================== */
+$('in-foto').addEventListener('change',e=>{
+  const f=e.target.files[0]; if(!f) return;
+  const img=new Image(), lector=new FileReader();
+  lector.onload=()=>{img.src=lector.result};
+  img.onload=()=>{
+    const max=900; let w=img.width,h=img.height;
+    if(w>h&&w>max){h=Math.round(h*max/w);w=max} else if(h>max){w=Math.round(w*max/h);h=max}
+    const c=document.createElement('canvas');c.width=w;c.height=h;
+    c.getContext('2d').drawImage(img,0,0,w,h);
+    fotoActual=c.toDataURL('image/jpeg',0.7);
+    pintarFoto();
+  };
+  lector.readAsDataURL(f);
+});
+function pintarFoto(){
+  const z=$('zona-foto');
+  if(!fotoActual){
+    z.innerHTML='<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 8a2 2 0 012-2h2.5l1.2-2h6.6l1.2 2H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V8z"/><circle cx="12" cy="12.5" r="3.5"/></svg><span>Tomar foto de la calabaza</span>';
+    return;
+  }
+  z.innerHTML='<img alt="Foto de la calabaza" src="'+fotoActual+'"><button class="quitar" type="button">Quitar</button>';
+  z.querySelector('.quitar').addEventListener('click',ev=>{ev.stopPropagation();fotoActual=null;$('in-foto').value='';pintarFoto()});
+}
+
+/* ===================== guardar ===================== */
+function guardarPieza(){
+  const tipo=tamanoElegido();
+  if(!tipo){toast('Falta elegir el tamaño');$('chips-tamano').scrollIntoView({behavior:'smooth',block:'center'});return;}
+  let cod=$('f-codigo').value.trim().toUpperCase();
+  if(!cod) cod=siguienteCodigo(tipo);
+  if(piezas.some(p=>p.etiqueta===cod && p.etiqueta!==editando)){toast('El código '+cod+' ya existe');return;}
+
+  const color=$('f-color').value;
+  const p={
+    etiqueta:cod, temporada:parseInt(cod.slice(0,2),10)+2000, tipo:tipo,
+    color:color, familia:familiaDe(color), textura:$('f-textura').value,
+    madronos:$('f-madronos').value, gajos:num($('f-gajos').value),
+    rabo:$('f-rabo').value, hojas:$('f-hojas').value, rafia:$('f-rafia').value, flores:$('f-flores').value,
+    diam:num($('f-diam').value), alt:num($('f-alt').value), circ:num($('f-circ').value),
+    tejedora:$('f-tejedora').value||null, fecha_produccion:$('f-fprod').value||null,
+    marca_hilo:$('f-marca').value||null, color_hilo:$('f-colorhilo').value.trim()||null,
+    madejas:num($('f-madejas').value), costo_madeja:num($('f-costomadeja').value),
+    costo_relleno:num($('f-relleno').value), costo_adornos:num($('f-adornos').value),
+    estado:$('f-estado').value, canal:$('f-canal').value,
+    fecha_asignacion:$('f-fasig').value||null, fecha_venta:$('f-fventa').value||null,
+    precio_venta:num($('f-precio').value), notas:$('f-notas').value.trim(),
+    foto:fotoActual||null, foto_url:null,
+    actualizada_en:new Date().toISOString(), pendiente:true
+  };
+  const prev=piezas.find(x=>x.etiqueta===editando);
+  if(prev){ p.foto_url=prev.foto_url; if(!fotoActual) p.foto=prev.foto; }
+
+  if(editando && editando!==cod){ quitarDeDB(editando); borradas.push(editando); piezas=piezas.filter(x=>x.etiqueta!==editando); }
+  piezas=piezas.filter(x=>x.etiqueta!==cod);
+  piezas.push(p);
+  persistir(p);
+
+  editando=null; $('btn-guardar').textContent='Guardar y capturar otra';
+  $('colgante').classList.remove('sellado'); void $('colgante').offsetWidth; $('colgante').classList.add('sellado');
+  toast(cod+' guardada · '+piezas.length+' en total');
+  siguiente(); pintarContadores(); pintarNube();
+  if(sesion) sincronizar(false);
+}
+function siguiente(){
+  fotoActual=null; $('in-foto').value=''; pintarFoto();
+  const limpiar=$('f-repetir').value==='no';
+  document.querySelectorAll('input[name="tam"]').forEach(r=>r.checked=false);
+  ['f-gajos','f-diam','f-alt','f-circ','f-codigo','f-fventa','f-precio'].forEach(i=>$(i).value='');
+  $('f-madronos').value='NO'; $('f-rafia').value='NO'; $('f-flores').value='NO';
+  if(limpiar){
+    $('f-color').value='MOSTAZA'; $('f-textura').value='PUNTO LISO';
+    $('f-rabo').value='CANELA'; $('f-hojas').value='NINGUNA';
+    $('f-colorhilo').value=''; $('f-madejas').value=''; $('f-notas').value=''; $('f-fasig').value='';
+  }
+  refrescarCodigo(); revisarPlegables();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+function limpiarTodo(){
+  editando=null; $('btn-guardar').textContent='Guardar y capturar otra';
+  const a=$('f-repetir').value; $('f-repetir').value='no'; siguiente(); $('f-repetir').value=a;
+  ['f-costomadeja','f-relleno','f-adornos','f-tejedora','f-marca','f-fprod'].forEach(i=>$(i).value='');
+  $('pleg-prod').open=false; $('pleg-med').open=false; revisarPlegables();
+  toast('Formulario limpio');
+}
+
+/* ===================== vistas ===================== */
+function verVista(v){
+  const cap=v==='captura';
+  $('v-captura').classList.toggle('oculto',!cap);
+  $('v-inventario').classList.toggle('oculto',cap);
+  $('barra-captura').classList.toggle('oculto',!cap);
+  $('tab-cap').setAttribute('aria-selected',cap);
+  $('tab-inv').setAttribute('aria-selected',!cap);
+  document.body.style.paddingBottom=cap?'96px':'24px';
+  if(!cap){pintarLista();pintarContadores()}
+  window.scrollTo({top:0});
+}
+function pintarContadores(){
+  let h='<span class="cont">Total <b>'+piezas.length+'</b></span>';
+  const pend=piezas.filter(p=>p.pendiente).length;
+  if(pend) h+='<span class="cont">Por subir <b>'+pend+'</b></span>';
+  TAMANOS.forEach(t=>{const n=piezas.filter(p=>p.tipo===t.t).length;
+    if(n) h+='<span class="cont">'+(t.t==='JUEGO DE 3'?'Juego':'Tipo '+t.t)+' <b>'+n+'</b></span>';});
+  $('contadores').innerHTML=h;
+}
+function pintarLista(){
+  const q=($('f-buscar').value||'').toLowerCase().trim();
+  const vis=piezas.filter(p=>!q||(p.etiqueta+' '+p.color+' '+p.textura+' '+p.canal).toLowerCase().includes(q))
+    .slice().sort((a,b)=>a.etiqueta<b.etiqueta?1:-1);
+  if(!vis.length){
+    $('lista').innerHTML='<div class="vacio"><h3>'+(piezas.length?'Nada coincide con esa búsqueda':'Todavía no hay piezas')+'</h3><p>'+(piezas.length?'Prueba con el código o el color.':'Ve a Capturar y da de alta tu primera calabaza.')+'</p></div>';
+    return;
+  }
+  $('lista').innerHTML=vis.map(p=>{
+    const d=datosTam(p.tipo);
+    const src=p.foto||p.foto_url;
+    const img=src?'<img alt="" src="'+src+'">':'<div class="sinfoto">sin foto</div>';
+    return '<div class="pieza">'+img+
+      '<div class="info"><div class="cod">'+p.etiqueta+'<span class="estado-pin">'+p.estado+'</span>'+
+      (p.pendiente?'<span class="estado-pin pin-pend">por subir</span>':'')+'</div>'+
+      '<div class="desc">'+(d?d.cm:'')+' · '+p.color+' · '+p.textura+(p.madronos==='SÍ'?' · madroños':'')+'</div>'+
+      '<div class="desc">'+p.canal+'</div></div>'+
+      '<div class="acc"><button class="mini" onclick="editar(\''+p.etiqueta+'\')">Editar</button>'+
+      '<button class="mini rojo" onclick="eliminar(\''+p.etiqueta+'\')">Borrar</button></div></div>';
+  }).join('');
+}
+function editar(et){
+  const p=piezas.find(x=>x.etiqueta===et); if(!p) return;
+  editando=et; verVista('captura');
+  document.querySelectorAll('input[name="tam"]').forEach(r=>{r.checked=(r.value===p.tipo)});
+  $('f-codigo').value=p.etiqueta;
+  $('f-temporada').value=p.etiqueta.slice(0,2)==='25'?'25':'26';
+  $('f-color').value=p.color; $('f-textura').value=p.textura;
+  $('f-madronos').value=p.madronos||'NO'; $('f-gajos').value=txt(p.gajos);
+  $('f-rabo').value=p.rabo||'CANELA'; $('f-hojas').value=p.hojas||'NINGUNA';
+  $('f-rafia').value=p.rafia||'NO'; $('f-flores').value=p.flores||'NO';
+  $('f-diam').value=txt(p.diam); $('f-alt').value=txt(p.alt); $('f-circ').value=txt(p.circ);
+  $('f-tejedora').value=p.tejedora||''; $('f-fprod').value=p.fecha_produccion||'';
+  $('f-marca').value=p.marca_hilo||''; $('f-colorhilo').value=txt(p.color_hilo);
+  $('f-madejas').value=txt(p.madejas); $('f-costomadeja').value=txt(p.costo_madeja);
+  $('f-relleno').value=txt(p.costo_relleno); $('f-adornos').value=txt(p.costo_adornos);
+  $('f-estado').value=p.estado||'EN ALMACÉN'; $('f-canal').value=p.canal||'ALMACÉN';
+  $('f-fasig').value=p.fecha_asignacion||''; $('f-fventa').value=p.fecha_venta||'';
+  $('f-precio').value=txt(p.precio_venta); $('f-notas').value=txt(p.notas);
+  fotoActual=p.foto||null; pintarFoto(); refrescarCodigo(); revisarPlegables();
+  const hayProd=[p.tejedora,p.fecha_produccion,p.marca_hilo,p.color_hilo,p.madejas,p.costo_madeja,p.costo_relleno,p.costo_adornos].some(v=>v!==null&&v!==undefined&&v!=='');
+  const hayMed=[p.diam,p.alt,p.circ].some(v=>v!==null&&v!==undefined&&v!=='');
+  $('pleg-prod').open=hayProd; $('pleg-med').open=hayMed;
+  $('btn-guardar').textContent='Guardar cambios';
+  toast('Editando '+et);
+}
+function eliminar(et){
+  if(!confirm('¿Borrar la pieza '+et+'? No se puede deshacer.')) return;
+  piezas=piezas.filter(x=>x.etiqueta!==et); quitarDeDB(et); borradas.push(et);
+  guardarLocal('thf_borradas',borradas);
+  pintarLista(); pintarContadores(); toast(et+' borrada');
+  if(sesion) sincronizar(false);
+}
+
+/* ===================== nube: sesión ===================== */
+function pintarNube(){
+  const pend=piezas.filter(p=>p.pendiente).length + borradas.length;
+  const punto=$('punto'), t=$('txt-nube');
+  if(!sesion){ punto.className='punto'; t.textContent='Sin conectar · solo en este dispositivo'; $('btn-sync').disabled=true; return; }
+  $('btn-sync').disabled=false;
+  if(!navigator.onLine){ punto.className='punto pend'; t.textContent='Sin internet · '+pend+' por subir'; return; }
+  if(sincronizando){ punto.className='punto pend'; t.textContent='Sincronizando…'; return; }
+  if(pend){ punto.className='punto pend'; t.textContent=pend+' por subir'; return; }
+  punto.className='punto ok';
+  t.textContent='Todo sincronizado'+(ultimaSync?' · '+ultimaSync:'');
+  const u=$('txt-ultima'); if(u) u.textContent=ultimaSync?('Última sincronización: '+ultimaSync):'';
+}
+async function api(ruta,opciones,reintento){
+  const r=await fetch(cfg.url.replace(/\/$/,'')+ruta,Object.assign({},opciones,{
+    headers:Object.assign({'apikey':cfg.key,'Authorization':'Bearer '+(sesion?sesion.access_token:cfg.key)},(opciones&&opciones.headers)||{})
+  }));
+  if(r.status===401 && sesion && !reintento){
+    const ok=await renovar();
+    if(ok) return api(ruta,opciones,true);
+  }
+  return r;
+}
+async function renovar(){
+  try{
+    const r=await fetch(cfg.url.replace(/\/$/,'')+'/auth/v1/token?grant_type=refresh_token',{
+      method:'POST',headers:{'apikey':cfg.key,'Content-Type':'application/json'},
+      body:JSON.stringify({refresh_token:sesion.refresh_token})});
+    if(!r.ok) throw 0;
+    const d=await r.json();
+    sesion={access_token:d.access_token,refresh_token:d.refresh_token,email:sesion.email};
+    guardarLocal('thf_sesion',sesion); return true;
+  }catch(e){ sesion=null; guardarLocal('thf_sesion',null); pintarSesion(); toast('La sesión venció, vuelve a conectar'); return false; }
+}
+async function entrar(){
+  const url=$('c-url').value.trim(), key=$('c-key').value.trim();
+  const mail=$('c-mail').value.trim(), pass=$('c-pass').value;
+  if(!url||!key||!mail||!pass){ toast('Faltan datos para conectar'); return; }
+  cfg={url:url,key:key};
+  try{
+    const r=await fetch(url.replace(/\/$/,'')+'/auth/v1/token?grant_type=password',{
+      method:'POST',headers:{'apikey':key,'Content-Type':'application/json'},
+      body:JSON.stringify({email:mail,password:pass})});
+    const d=await r.json();
+    if(!r.ok||!d.access_token){ toast(d.error_description||d.msg||'No se pudo entrar'); return; }
+    sesion={access_token:d.access_token,refresh_token:d.refresh_token,email:mail};
+    guardarLocal('thf_cfg',cfg); guardarLocal('thf_sesion',sesion);
+    $('c-pass').value='';
+    pintarSesion(); toast('Conectada'); sincronizar(true);
+  }catch(e){ toast('No se pudo contactar el servidor'); }
+}
+function salir(){
+  sesion=null; guardarLocal('thf_sesion',null); pintarSesion(); pintarNube();
+  toast('Sesión cerrada · tus datos siguen en este dispositivo');
+}
+function pintarSesion(){
+  const dentro=!!sesion;
+  $('caja-login').classList.toggle('oculto',dentro);
+  $('caja-sesion').classList.toggle('oculto',!dentro);
+  if(dentro) $('txt-mail').textContent=sesion.email;
+  if(cfg.url) $('c-url').value=cfg.url;
+  if(cfg.key) $('c-key').value=cfg.key;
+  pintarNube();
+}
+
+/* ===================== nube: sincronizar ===================== */
+function aFila(p){
+  const c=Object.assign({},p);
+  delete c.foto; delete c.pendiente;
+  return c;
+}
+async function subirFoto(p){
+  if(!p.foto) return null;
+  const bin=atob(p.foto.split(',')[1]);
+  const arr=new Uint8Array(bin.length);
+  for(let i=0;i<bin.length;i++) arr[i]=bin.charCodeAt(i);
+  const r=await api('/storage/v1/object/calabazas/'+encodeURIComponent(p.etiqueta)+'.jpg',{
+    method:'POST', headers:{'Content-Type':'image/jpeg','x-upsert':'true'}, body:new Blob([arr],{type:'image/jpeg'})});
+  if(!r.ok) return null;
+  return cfg.url.replace(/\/$/,'')+'/storage/v1/object/public/calabazas/'+encodeURIComponent(p.etiqueta)+'.jpg';
+}
+async function sincronizar(avisar){
+  if(!sesion){ if(avisar) toast('Primero conecta con la nube'); return; }
+  if(sincronizando) return;
+  if(!navigator.onLine){ if(avisar) toast('Sin internet · se subirá sola cuando vuelva'); pintarNube(); return; }
+  sincronizando=true; pintarNube();
+  let subidas=0, bajadas=0, fallo=false;
+  try{
+    // borrados
+    for(const et of borradas.slice()){
+      const r=await api('/rest/v1/piezas?etiqueta=eq.'+encodeURIComponent(et),{method:'DELETE'});
+      if(r.ok||r.status===404) borradas=borradas.filter(x=>x!==et);
+    }
+    guardarLocal('thf_borradas',borradas);
+    // subir pendientes
+    for(const p of piezas.filter(x=>x.pendiente)){
+      if(p.foto && !p.foto_url){ const u=await subirFoto(p); if(u) p.foto_url=u; }
+      const r=await api('/rest/v1/piezas',{method:'POST',
+        headers:{'Content-Type':'application/json','Prefer':'resolution=merge-duplicates,return=minimal'},
+        body:JSON.stringify(aFila(p))});
+      if(r.ok){ p.pendiente=false; persistir(p); subidas++; } else { fallo=true; }
+    }
+    // bajar todo
+    const r=await api('/rest/v1/piezas?select=*',{method:'GET'});
+    if(r.ok){
+      const remotas=await r.json();
+      const mapaR=new Map(remotas.map(x=>[x.etiqueta,x]));
+      remotas.forEach(rem=>{
+        const loc=piezas.find(x=>x.etiqueta===rem.etiqueta);
+        if(loc && loc.pendiente) return;
+        if(!loc || (rem.actualizada_en||'') > (loc.actualizada_en||'')){
+          const nueva=Object.assign({},rem,{pendiente:false,foto:loc?loc.foto:null});
+          piezas=piezas.filter(x=>x.etiqueta!==rem.etiqueta);
+          piezas.push(nueva); persistir(nueva); bajadas++;
+        }
+      });
+      // borradas desde otro dispositivo
+      piezas.filter(p=>!p.pendiente && !mapaR.has(p.etiqueta)).forEach(p=>{
+        piezas=piezas.filter(x=>x.etiqueta!==p.etiqueta); quitarDeDB(p.etiqueta);
+      });
+      ultimaSync=new Date().toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit'});
+    } else fallo=true;
+  }catch(e){ fallo=true; }
+  sincronizando=false; pintarNube(); pintarContadores();
+  if(!$('v-inventario').classList.contains('oculto')) pintarLista();
+  if(!editando) refrescarCodigo();
+  if(avisar){
+    if(fallo) toast('Hubo un problema al sincronizar');
+    else toast('Listo · '+subidas+' subidas, '+bajadas+' actualizadas');
+  }
+}
+window.addEventListener('online',()=>{pintarNube(); if(sesion) sincronizar(false);});
+window.addEventListener('offline',pintarNube);
+
+/* ===================== exportar ===================== */
+function cargarScript(src){return new Promise((res,rej)=>{const s=document.createElement('script');s.src=src;s.onload=res;s.onerror=()=>rej(new Error('sin conexión'));document.head.appendChild(s)})}
+function filaExcel(p){
+  return [p.etiqueta,'',p.tipo,'',p.color,'',p.textura,p.madronos,txt(p.gajos),p.rabo,p.hojas,p.rafia,p.flores,
+    txt(p.diam),txt(p.alt),txt(p.circ),p.tejedora,txt(p.fecha_produccion),p.marca_hilo,txt(p.color_hilo),
+    txt(p.madejas),txt(p.costo_madeja),'',txt(p.costo_relleno),txt(p.costo_adornos),'','','','','',
+    p.estado,p.canal,txt(p.fecha_asignacion),txt(p.fecha_venta),txt(p.precio_venta),'','',txt(p.notas)];
+}
+async function exportarExcel(){
+  if(!piezas.length){toast('No hay piezas que exportar');return}
+  try{ if(!window.XLSX) await cargarScript('https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js'); }
+  catch(e){ toast('Necesitas conexión para crear el Excel'); return; }
+  const orden=piezas.slice().sort((a,b)=>a.etiqueta<b.etiqueta?-1:1);
+  const ws=XLSX.utils.aoa_to_sheet([CABECERAS].concat(orden.map(filaExcel)));
+  ws['!cols']=CABECERAS.map(h=>({wch:Math.max(10,Math.min(24,h.length+2))}));
+  const wb=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb,ws,'PARA EL MAESTRO');
+  XLSX.writeFile(wb,'THF_captura_calabazas_'+hoyISO()+'.xlsx');
+  toast('Excel descargado');
+}
+async function exportarFotos(){
+  const con=piezas.filter(p=>p.foto);
+  if(!con.length){toast('No hay fotos guardadas en este dispositivo');return}
+  try{ if(!window.JSZip) await cargarScript('https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js'); }
+  catch(e){ toast('Necesitas conexión para armar el zip'); return; }
+  const zip=new JSZip();
+  con.forEach(p=>zip.file(p.etiqueta+'.jpg',p.foto.split(',')[1],{base64:true}));
+  descargarBlob(await zip.generateAsync({type:'blob'}),'THF_fotos_calabazas_'+hoyISO()+'.zip');
+  toast(con.length+' fotos descargadas');
+}
+function descargarBlob(blob,nombre){
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=nombre;
+  document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+}
+function respaldar(){
+  descargarBlob(new Blob([JSON.stringify(piezas)],{type:'application/json'}),'THF_respaldo_calabazas_'+hoyISO()+'.json');
+  toast('Respaldo creado');
+}
+$('in-respaldo').addEventListener('change',e=>{
+  const f=e.target.files[0]; if(!f) return;
+  const r=new FileReader();
+  r.onload=()=>{
+    try{
+      const datos=JSON.parse(r.result);
+      if(!Array.isArray(datos)) throw new Error();
+      let n=0;
+      datos.forEach(p=>{ if(!piezas.some(x=>x.etiqueta===p.etiqueta)){ p.pendiente=true; piezas.push(p); persistir(p); n++; } });
+      pintarLista(); pintarContadores(); pintarNube(); toast(n+' piezas cargadas');
+    }catch(err){ toast('Ese archivo no es un respaldo válido'); }
+    e.target.value='';
+  };
+  r.readAsText(f);
+});
+
+/* ===================== arranque ===================== */
+(async function(){
+  construir();
+  cfg=leerLocal('thf_cfg')||{url:'',key:''};
+  sesion=leerLocal('thf_sesion')||null;
+  borradas=leerLocal('thf_borradas')||[];
+  await cargarLocales();
+  pintarSesion(); refrescarCodigo(); pintarContadores(); pintarFoto(); pintarNube(); revisarPlegables();
+  if(sesion) sincronizar(false);
+  relojSync=setInterval(()=>{ if(sesion && navigator.onLine && !document.hidden) sincronizar(false); },60000);
+})();
+</script>
+</body>
+</html>

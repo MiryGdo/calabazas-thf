@@ -1,0 +1,24 @@
+# Respaldos y exportaciones: contienen datos del inventario, no van al repositorio
+THF_respaldo_*.json
+THF_captura_*.xlsx
+THF_fotos_*.zip
+*.xlsx
+*.zip
+
+# Credenciales: nunca deben subirse
+.env
+.env.*
+credenciales*
+llaves*
+
+# Basura de sistema
+.DS_Store
+Thumbs.db
+desktop.ini
+*.swp
+*~
+
+# Carpetas de herramientas
+node_modules/
+.netlify/
+.vscode/

@@ -1,0 +1,21 @@
+# Configuración de publicación
+# Este proyecto es un sitio estático de un solo archivo: no se compila nada.
+
+[build]
+  publish = "."
+  command = ""
+
+# Encabezados de seguridad
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "SAMEORIGIN"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    Permissions-Policy = "camera=(self), microphone=(), geolocation=()"
+
+# La app se actualiza sola al publicar una versión nueva
+[[headers]]
+  for = "/index.html"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
