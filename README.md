@@ -31,13 +31,31 @@ Este sistema registra cada pieza como un individuo, con su código propio, y gua
 ```
 26-A001
 │  │ └── consecutivo dentro de esa talla
-│  └──── letra de la talla (A = tipo 0, B = tipo 1 … J = juego)
+│  └──── letra de la talla (A = tipo 0, B = tipo 1 … H = tipo 8, I = juego de 3)
 └─────── temporada
 ```
 
 La app calcula el consecutivo sola, contando lo que ya existe en la nube. Si ya hay una B011, la siguiente talla 1 sale como B012 — aunque la hayas capturado en otro dispositivo.
 
 El año permite distinguir de un vistazo el inventario rezagado del nuevo. Para dar de alta piezas de la temporada pasada se cambia la temporada a `25` en Ajustes de captura.
+
+### Las tallas
+
+| Letra | Tipo | Base (cm) | Altura (cm) | Contorno (cm) | Puntos |
+|---|---|---|---|---|---|
+| A | 0 | 5 – 6.5 | 3 – 4 | 13 – 15 | 24 |
+| B | 1 | 6 – 8 | 4 – 5 | 19 – 21 | 40 |
+| C | 2 | 9 – 11.5 | 5 – 7 | 25 – 33 | 56 |
+| D | 3 | 12 – 15 | 7 – 9 | 37 – 43 | 72 |
+| E | 5 | 16 – 22 | 9 – 11 | 48 – 55 | 120 |
+| F | 6 | 23 – 25 | 11 – 14 | 58 – 65 | 140 |
+| G | 7 | 26 – 34 | 14 – 22 | 71 – 91 | 160 |
+| H | 8 | 35 – 42 | 22 – 31 | 100 – 116 | 184 |
+| I | Juego de 3 | 16 – 25 | 20 – 30 | 44 – 72 | variado |
+
+El **tipo 4 fue retirado**: ya no se teje. El juego de 3 se compone de las tallas 7, 6 y 5.
+
+Al capturar, si una medida real cae fuera del rango de la talla elegida, la app lo avisa sin impedir el guardado — sirve para detectar errores de clasificación, no para bloquear.
 
 ### El ciclo de una pieza
 
@@ -113,6 +131,18 @@ También se pueden descargar todas las fotos en un zip, cada una nombrada con su
 
 ---
 
+## Impresión de etiquetas
+
+`etiquetas.html` genera los colgantes numerados **antes** de capturar, para poder etiquetar las piezas físicamente y llenar los datos después.
+
+Se elige temporada, talla y rango (por ejemplo `26-B001` a `26-B025`) y se imprime en tamaño carta: 16 etiquetas por hoja. Se pueden acumular varias tallas en una misma impresión con *Agregar otra talla*.
+
+Cada etiqueta trae el cuerpo con el código y la talla, y el talón desprendible con la sigla, el identificador y el precio. La línea punteada del centro es por donde se arranca el talón al vender la pieza.
+
+Al imprimir hay que activar **Gráficos de fondo** para que salga el color, y usar cartulina de 180–200 g.
+
+---
+
 ## Respaldos
 
 El botón **Crear respaldo** descarga un `.json` con todo el inventario. Conviene hacerlo al terminar cada sesión fuerte de captura y guardarlo fuera del dispositivo.
@@ -144,6 +174,7 @@ Si en algún momento se agregan credenciales dentro del archivo, el repositorio 
 
 ```
 index.html            La aplicación completa, en un solo archivo
+etiquetas.html        Generador de colgantes numerados para imprimir
 supabase-setup.sql    Script de instalación de la base de datos
 README.md             Este documento
 LICENSE               Términos de uso
