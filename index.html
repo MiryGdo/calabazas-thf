@@ -152,6 +152,41 @@ textarea{min-height:64px;resize:vertical}
 .pin-pend{background:#F6E3B8;color:#7A5A12}
 .vacio{text-align:center;padding:44px 20px;color:var(--tinta-suave)}
 .vacio h3{font-size:17px;margin-bottom:6px;color:var(--tinta)}
+
+/* filtros */
+.filtros{background:var(--papel-alto);border:1px solid var(--linea);border-radius:var(--r);padding:11px;margin-bottom:11px}
+.filtros .fila3{gap:7px}
+.filtros label{font-size:10px;margin-bottom:3px}
+.filtros select,.filtros input{padding:8px 9px;font-size:14px}
+.barra-sel{display:flex;align-items:center;gap:8px;margin-top:9px;flex-wrap:wrap}
+.barra-sel .mini{padding:7px 11px}
+.hallazgos{font-size:12.5px;color:var(--tinta-suave);margin-top:8px}
+.hallazgos b{color:var(--tinta);font-family:'IBM Plex Mono',monospace}
+
+/* fila con acciones */
+.pieza{align-items:stretch}
+.pieza .info{display:flex;flex-direction:column;justify-content:center}
+.fechas{display:flex;gap:9px;flex-wrap:wrap;font-size:11px;color:var(--tinta-suave);margin-top:3px}
+.fechas span{white-space:nowrap}
+.fechas b{font-weight:600;color:var(--tinta)}
+.pieza .acc{justify-content:center}
+.mini.accion{background:var(--tinta);color:var(--papel-alto);border-color:var(--tinta);font-weight:600}
+.sel-caja{display:flex;align-items:center;padding:0 2px 0 4px}
+.sel-caja input{width:20px;height:20px;-webkit-appearance:checkbox;appearance:checkbox;margin:0}
+.pieza.marcada{outline:2px solid var(--mostaza);outline-offset:-1px}
+
+/* hoja de acción rápida */
+.telon{position:fixed;inset:0;background:rgba(30,42,46,.5);z-index:70;display:flex;align-items:flex-end;justify-content:center}
+.telon.oculto{display:none}
+.hoja-accion{background:var(--papel);width:100%;max-width:600px;border-radius:16px 16px 0 0;padding:16px 14px calc(16px + env(safe-area-inset-bottom));
+ max-height:88vh;overflow-y:auto;box-shadow:0 -6px 30px rgba(30,42,46,.25)}
+.hoja-accion h3{font-family:'Fraunces',Georgia,serif;font-size:17px;margin:0 0 3px}
+.hoja-accion .quien{font-size:13px;color:var(--tinta-suave);margin-bottom:14px}
+.opciones-estado{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:13px}
+.opciones-estado button{border:1px solid var(--linea);background:#fff;border-radius:999px;padding:9px 14px;
+ font:500 13.5px 'IBM Plex Sans';cursor:pointer;color:var(--tinta)}
+.opciones-estado button[aria-pressed="true"]{background:var(--tinta);color:var(--papel-alto);border-color:var(--tinta)}
+.cerrar-hoja{position:absolute;top:0;right:0}
 .aviso{background:#F6E3B8;border:1px solid #DFA22B;border-radius:8px;padding:10px 12px;font-size:13px;margin:12px 0}
 .aviso.malo{background:#F2DCD6;border-color:var(--ladrillo)}
 .nota{font-size:12px;color:var(--tinta-suave);margin-top:6px}
@@ -321,9 +356,35 @@ textarea{min-height:64px;resize:vertical}
 <!-- ============ INVENTARIO ============ -->
 <section id="v-inventario" class="oculto">
   <div class="contadores" id="contadores"></div>
-  <div class="campo" style="margin-bottom:10px">
-    <input type="search" id="f-buscar" placeholder="Buscar por código, color o textura" oninput="pintarLista()">
+
+  <div class="filtros">
+    <div class="fila3">
+      <div class="campo"><label for="fi-canal">Lugar</label><select id="fi-canal"></select></div>
+      <div class="campo"><label for="fi-estado">Estado</label><select id="fi-estado"></select></div>
+      <div class="campo"><label for="fi-talla">Talla</label><select id="fi-talla"></select></div>
+    </div>
+    <div class="fila" style="margin-top:8px">
+      <div class="campo"><label for="fi-cuando">Fecha</label><select id="fi-cuando">
+        <option value="">Todas las fechas</option>
+        <option value="hoy">Asignadas hoy</option>
+        <option value="7">Asignadas en los últimos 7 días</option>
+        <option value="dia">Asignadas en un día exacto…</option>
+        <option value="vhoy">Vendidas hoy</option>
+      </select></div>
+      <div class="campo"><label for="fi-fecha">Día exacto</label><input type="date" id="fi-fecha" disabled></div>
+    </div>
+    <div class="campo" style="margin-top:8px">
+      <input type="search" id="f-buscar" placeholder="Buscar por código, color o textura" oninput="pintarLista()">
+    </div>
+    <div class="barra-sel">
+      <button class="mini" id="btn-modo-sel" onclick="alternarSeleccion()">Seleccionar varias</button>
+      <button class="mini oculto" id="btn-todas" onclick="marcarTodas()">Marcar todas</button>
+      <button class="mini accion oculto" id="btn-lote" onclick="abrirHoja(null)">Cambiar estado de las marcadas</button>
+      <button class="mini" onclick="limpiarFiltros()">Quitar filtros</button>
+    </div>
+    <div class="hallazgos" id="hallazgos"></div>
   </div>
+
   <div id="lista"></div>
 
   <div class="tarjeta">
@@ -368,6 +429,23 @@ textarea{min-height:64px;resize:vertical}
   </div>
 </div>
 
+<div class="telon oculto" id="telon" onclick="if(event.target===this)cerrarHoja()">
+  <div class="hoja-accion">
+    <h3 id="ha-titulo">Cambiar estado</h3>
+    <div class="quien" id="ha-quien"></div>
+
+    <label>Nuevo estado</label>
+    <div class="opciones-estado" id="ha-estados"></div>
+
+    <div id="ha-campos"></div>
+
+    <div class="acciones-exp" style="margin-top:14px">
+      <button class="btn btn-primario" onclick="aplicarAccion()">Aplicar</button>
+      <button class="btn btn-sec" onclick="cerrarHoja()">Cancelar</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
@@ -406,6 +484,7 @@ const CABECERAS=['ETIQUETA','AÑO','TIPO','LETRA','COLOR','FAMILIA DE COLOR','TE
 /* ===================== estado ===================== */
 let piezas=[], borradas=[], db=null, modoMemoria=false, editando=null, fotoActual=null;
 let cfg={url:'',key:''}, sesion=null, sincronizando=false, ultimaSync=null, relojSync=null;
+let modoSel=false, marcadas=new Set(), objetivoHoja=null, estadoElegido=null;
 
 const $=id=>document.getElementById(id);
 const guardarLocal=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}};
@@ -496,6 +575,19 @@ function construir(){
   $('f-marca').options[0].textContent='— sin registrar —';
   llenar('f-canal',CANALES,'ALMACÉN');
   llenar('f-estado',ESTADOS,'EN ALMACÉN');
+  llenar('fi-canal',['— Todos los lugares —'].concat(CANALES),'— Todos los lugares —');
+  llenar('fi-estado',['— Todos los estados —'].concat(ESTADOS),'— Todos los estados —');
+  const tallas=TAMANOS.map(t=>t.t==='JUEGO DE 3'?'JUEGO DE 3':t.t);
+  llenar('fi-talla',['— Todas las tallas —'].concat(tallas),'— Todas las tallas —');
+  const st=$('fi-talla');
+  TAMANOS.forEach((t,i)=>{ st.options[i+1].textContent=(t.t==='JUEGO DE 3'?'Juego de 3':'Tipo '+t.t)+' · '+t.cm; });
+  ['fi-canal','fi-estado','fi-talla','fi-fecha'].forEach(id=>$(id).addEventListener('change',pintarLista));
+  $('fi-cuando').addEventListener('change',()=>{
+    const esDia=$('fi-cuando').value==='dia';
+    $('fi-fecha').disabled=!esDia;
+    if(esDia && !$('fi-fecha').value) $('fi-fecha').value=hoyISO();
+    pintarLista();
+  });
   $('f-temporada').addEventListener('change',()=>{if(!editando)refrescarCodigo()});
   $('f-codigo').addEventListener('input',()=>{
     const v=$('f-codigo').value;
@@ -568,6 +660,7 @@ function guardarPieza(){
   if(piezas.some(p=>p.etiqueta===cod && p.etiqueta!==editando)){toast('El código '+cod+' ya existe');return;}
 
   const color=$('f-color').value;
+  const prev=piezas.find(x=>x.etiqueta===editando);
   const p={
     etiqueta:cod, temporada:parseInt(cod.slice(0,2),10)+2000, tipo:tipo,
     color:color, familia:familiaDe(color), textura:$('f-textura').value,
@@ -581,10 +674,9 @@ function guardarPieza(){
     estado:$('f-estado').value, canal:$('f-canal').value,
     fecha_asignacion:$('f-fasig').value||null, fecha_venta:$('f-fventa').value||null,
     precio_venta:num($('f-precio').value), notas:$('f-notas').value.trim(),
-    foto:fotoActual||null, foto_url:null,
+    foto:fotoActual||null, foto_url:null, creada_en:(prev&&prev.creada_en)||new Date().toISOString(),
     actualizada_en:new Date().toISOString(), pendiente:true
   };
-  const prev=piezas.find(x=>x.etiqueta===editando);
   if(prev){ p.foto_url=prev.foto_url; if(!fotoActual) p.foto=prev.foto; }
 
   if(editando && editando!==cod){ quitarDeDB(editando); borradas.push(editando); piezas=piezas.filter(x=>x.etiqueta!==editando); }
@@ -640,10 +732,34 @@ function pintarContadores(){
     if(n) h+='<span class="cont">'+(t.t==='JUEGO DE 3'?'Juego':'Tipo '+t.t)+' <b>'+n+'</b></span>';});
   $('contadores').innerHTML=h;
 }
-function pintarLista(){
+function filtrar(){
   const q=($('f-buscar').value||'').toLowerCase().trim();
-  const vis=piezas.filter(p=>!q||(p.etiqueta+' '+p.color+' '+p.textura+' '+p.canal).toLowerCase().includes(q))
-    .slice().sort((a,b)=>a.etiqueta<b.etiqueta?1:-1);
+  const canal=$('fi-canal').value, estado=$('fi-estado').value, talla=$('fi-talla').value;
+  const cuando=$('fi-cuando').value, dia=$('fi-fecha').value;
+  const hoy=hoyISO();
+  const hace7=(()=>{const d=new Date();d.setDate(d.getDate()-6);
+    return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');})();
+  return piezas.filter(p=>{
+    if(q && !(p.etiqueta+' '+p.color+' '+p.textura+' '+p.canal).toLowerCase().includes(q)) return false;
+    if(canal.indexOf('—')<0 && p.canal!==canal) return false;
+    if(estado.indexOf('—')<0 && p.estado!==estado) return false;
+    if(talla.indexOf('—')<0 && p.tipo!==talla) return false;
+    const fa=p.fecha_asignacion||'', fv=p.fecha_venta||'';
+    if(cuando==='hoy'  && fa!==hoy) return false;
+    if(cuando==='7'    && !(fa && fa>=hace7 && fa<=hoy)) return false;
+    if(cuando==='dia'  && (!dia || fa!==dia)) return false;
+    if(cuando==='vhoy' && fv!==hoy) return false;
+    return true;
+  }).sort((a,b)=>a.etiqueta<b.etiqueta?1:-1);
+}
+function pintarLista(){
+  const vis=filtrar();
+  const h=$('hallazgos');
+  if(h){
+    const val=vis.reduce((t,p)=>t+(datosTam(p.tipo)?datosTam(p.tipo).pub:0),0);
+    h.innerHTML='Mostrando <b>'+vis.length+'</b> de '+piezas.length+' piezas · valor a precio público <b>$'+val.toLocaleString('es-MX')+'</b>'+
+      (modoSel?' · marcadas <b>'+marcadas.size+'</b>':'');
+  }
   if(!vis.length){
     $('lista').innerHTML='<div class="vacio"><h3>'+(piezas.length?'Nada coincide con esa búsqueda':'Todavía no hay piezas')+'</h3><p>'+(piezas.length?'Prueba con el código o el color.':'Ve a Capturar y da de alta tu primera calabaza.')+'</p></div>';
     return;
@@ -652,15 +768,132 @@ function pintarLista(){
     const d=datosTam(p.tipo);
     const src=p.foto||p.foto_url;
     const img=src?'<img alt="" src="'+src+'">':'<div class="sinfoto">sin foto</div>';
-    return '<div class="pieza">'+img+
+    const alta=(p.creada_en||'').slice(0,10)||p.fecha_produccion||'';
+    const f=[];
+    if(alta) f.push('<span>Alta <b>'+corto(alta)+'</b></span>');
+    if(p.fecha_asignacion) f.push('<span>Asignada <b>'+corto(p.fecha_asignacion)+'</b></span>');
+    if(p.fecha_venta) f.push('<span>Vendida <b>'+corto(p.fecha_venta)+'</b></span>');
+    const chk=modoSel?'<div class="sel-caja"><input type="checkbox" '+(marcadas.has(p.etiqueta)?'checked':'')+
+      ' onchange="alternarMarca(\''+p.etiqueta+'\')" aria-label="Marcar '+p.etiqueta+'"></div>':'';
+    return '<div class="pieza'+(marcadas.has(p.etiqueta)?' marcada':'')+'">'+chk+img+
       '<div class="info"><div class="cod">'+p.etiqueta+'<span class="estado-pin">'+p.estado+'</span>'+
       (p.pendiente?'<span class="estado-pin pin-pend">por subir</span>':'')+'</div>'+
       '<div class="desc">'+(d?d.cm:'')+' · '+p.color+' · '+p.textura+(p.madronos==='SÍ'?' · madroños':'')+'</div>'+
-      '<div class="desc">'+p.canal+'</div></div>'+
-      '<div class="acc"><button class="mini" onclick="editar(\''+p.etiqueta+'\')">Editar</button>'+
+      '<div class="desc">'+p.canal+'</div>'+
+      (f.length?'<div class="fechas">'+f.join('')+'</div>':'')+'</div>'+
+      '<div class="acc"><button class="mini accion" onclick="abrirHoja(\''+p.etiqueta+'\')">Estado</button>'+
+      '<button class="mini" onclick="editar(\''+p.etiqueta+'\')">Editar</button>'+
       '<button class="mini rojo" onclick="eliminar(\''+p.etiqueta+'\')">Borrar</button></div></div>';
   }).join('');
 }
+function corto(iso){
+  if(!iso) return '';
+  const p=iso.slice(0,10).split('-');
+  const m=['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+  return parseInt(p[2],10)+' '+m[parseInt(p[1],10)-1];
+}
+function limpiarFiltros(){
+  $('fi-canal').selectedIndex=0; $('fi-estado').selectedIndex=0; $('fi-talla').selectedIndex=0;
+  $('fi-cuando').value=''; $('fi-fecha').value=''; $('fi-fecha').disabled=true; $('f-buscar').value='';
+  pintarLista();
+}
+function alternarSeleccion(){
+  modoSel=!modoSel; if(!modoSel) marcadas.clear();
+  $('btn-modo-sel').textContent=modoSel?'Salir de selección':'Seleccionar varias';
+  $('btn-todas').classList.toggle('oculto',!modoSel);
+  actualizarLote(); pintarLista();
+}
+function alternarMarca(et){
+  if(marcadas.has(et)) marcadas.delete(et); else marcadas.add(et);
+  actualizarLote(); pintarLista();
+}
+function marcarTodas(){
+  const vis=filtrar();
+  const faltan=vis.some(p=>!marcadas.has(p.etiqueta));
+  vis.forEach(p=>{ if(faltan) marcadas.add(p.etiqueta); else marcadas.delete(p.etiqueta); });
+  $('btn-todas').textContent=faltan?'Desmarcar todas':'Marcar todas';
+  actualizarLote(); pintarLista();
+}
+function actualizarLote(){
+  const b=$('btn-lote');
+  b.classList.toggle('oculto',!(modoSel&&marcadas.size));
+  b.textContent='Cambiar estado de '+marcadas.size+(marcadas.size===1?' pieza':' piezas');
+}
+
+/* ---------- hoja de acción rápida ---------- */
+function abrirHoja(et){
+  objetivoHoja = et ? [et] : Array.from(marcadas);
+  if(!objetivoHoja.length){ toast('No hay piezas marcadas'); return; }
+  const uno = objetivoHoja.length===1 ? piezas.find(p=>p.etiqueta===objetivoHoja[0]) : null;
+  $('ha-titulo').textContent = uno ? uno.etiqueta : objetivoHoja.length+' piezas seleccionadas';
+  $('ha-quien').textContent = uno
+    ? [datosTam(uno.tipo)?datosTam(uno.tipo).cm:'',uno.color,uno.textura].filter(Boolean).join(' · ')+' · ahora en '+uno.canal
+    : 'Se les aplicará el mismo cambio a todas.';
+  estadoElegido = uno ? uno.estado : 'ASIGNADA';
+  const cont=$('ha-estados'); cont.innerHTML='';
+  ESTADOS.forEach(e=>{
+    const b=document.createElement('button');
+    b.type='button'; b.textContent=e; b.setAttribute('aria-pressed', e===estadoElegido);
+    b.onclick=()=>{ estadoElegido=e; [...cont.children].forEach(x=>x.setAttribute('aria-pressed', x.textContent===e)); pintarCamposHoja(); };
+    cont.appendChild(b);
+  });
+  pintarCamposHoja();
+  $('telon').classList.remove('oculto');
+}
+function pintarCamposHoja(){
+  const uno = objetivoHoja.length===1 ? piezas.find(p=>p.etiqueta===objetivoHoja[0]) : null;
+  const c=$('ha-campos');
+  const opCanal=CANALES.map(x=>'<option'+((uno&&uno.canal===x)||(!uno&&x==='ALLEGRA')?' selected':'')+'>'+x+'</option>').join('');
+  let h='';
+  if(estadoElegido==='ASIGNADA'){
+    h='<div class="fila"><div class="campo"><label for="ha-canal">Lugar</label><select id="ha-canal">'+opCanal+'</select></div>'+
+      '<div class="campo"><label for="ha-fecha">Fecha de asignación</label><input type="date" id="ha-fecha" value="'+
+      ((uno&&uno.fecha_asignacion)||hoyISO())+'"></div></div>';
+  } else if(estadoElegido==='VENDIDA'){
+    const sug = uno && datosTam(uno.tipo) ? datosTam(uno.tipo).pub : '';
+    h='<div class="fila"><div class="campo"><label for="ha-fecha">Fecha de venta</label><input type="date" id="ha-fecha" value="'+
+      ((uno&&uno.fecha_venta)||hoyISO())+'"></div>'+
+      '<div class="campo"><label for="ha-precio">Precio de venta</label><input type="number" inputmode="decimal" id="ha-precio" value="'+
+      ((uno&&uno.precio_venta)||sug)+'" placeholder="'+sug+'"></div></div>'+
+      '<div class="nota">Si son varias piezas, el precio se aplica a cada una. Déjalo vacío para no tocarlo.</div>';
+  } else if(estadoElegido==='DEVUELTA'||estadoElegido==='EN ALMACÉN'){
+    h='<div class="campo"><label for="ha-canal">Regresa a</label><select id="ha-canal">'+
+      CANALES.map(x=>'<option'+(x==='ALMACÉN'?' selected':'')+'>'+x+'</option>').join('')+'</select></div>'+
+      '<div class="nota">Se limpia la fecha de asignación para que los días en piso vuelvan a contar desde cero.</div>';
+  } else {
+    h='<div class="nota">No hacen falta más datos para este estado.</div>';
+  }
+  c.innerHTML=h;
+}
+function cerrarHoja(){ $('telon').classList.add('oculto'); objetivoHoja=null; }
+function aplicarAccion(){
+  if(!objetivoHoja) return;
+  const canal=$('ha-canal')?$('ha-canal').value:null;
+  const fecha=$('ha-fecha')?$('ha-fecha').value:null;
+  const precioTxt=$('ha-precio')?$('ha-precio').value:'';
+  let n=0;
+  objetivoHoja.forEach(et=>{
+    const p=piezas.find(x=>x.etiqueta===et); if(!p) return;
+    p.estado=estadoElegido;
+    if(estadoElegido==='ASIGNADA'){ if(canal) p.canal=canal; p.fecha_asignacion=fecha||hoyISO(); }
+    if(estadoElegido==='VENDIDA'){
+      p.fecha_venta=fecha||hoyISO();
+      if(precioTxt!=='') p.precio_venta=parseFloat(precioTxt);
+      if(!p.fecha_asignacion) p.fecha_asignacion=p.fecha_venta;
+    }
+    if(estadoElegido==='DEVUELTA'||estadoElegido==='EN ALMACÉN'){
+      if(canal) p.canal=canal;
+      p.fecha_asignacion=null; p.fecha_venta=null; p.precio_venta=null;
+    }
+    p.actualizada_en=new Date().toISOString(); p.pendiente=true;
+    persistir(p); n++;
+  });
+  cerrarHoja(); marcadas.clear(); actualizarLote();
+  pintarLista(); pintarContadores(); pintarNube();
+  toast(n+(n===1?' pieza actualizada':' piezas actualizadas'));
+  if(sesion) sincronizar(false);
+}
+
 function editar(et){
   const p=piezas.find(x=>x.etiqueta===et); if(!p) return;
   editando=et; verVista('captura');

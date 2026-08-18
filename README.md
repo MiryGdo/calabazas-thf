@@ -66,7 +66,13 @@ Al capturar, si una medida real cae fuera del rango de la talla elegida, la app 
 | Se vende | Estado `VENDIDA` + fecha de venta + precio real |
 | Regresa o se daña | Estado `DEVUELTA` o `DAÑADA` |
 
-Para registrar una venta no se captura de nuevo: se busca el código en la pestaña Inventario, se presiona **Editar** y se cambia el estado.
+Para registrar una venta o una asignación no se captura de nuevo. En la pestaña **Inventario**, cada pieza tiene un botón **Estado** que abre una hoja rápida con el nuevo estado y los campos que ese estado necesita (lugar y fecha si se asigna, fecha y precio si se vende). El precio viene sugerido según la talla.
+
+Para entregar varias piezas a un mismo punto de venta se usa **Seleccionar varias**: se filtra por talla o por lo que haga falta, se marcan las piezas —o se usa *Marcar todas*— y se aplica el cambio a todas de una vez.
+
+**Filtros disponibles:** lugar, estado, talla, búsqueda por texto y fecha (asignadas hoy, últimos 7 días, un día exacto, o vendidas hoy). Debajo de los filtros se muestra cuántas piezas coinciden y cuánto valen a precio público.
+
+**Las tres fechas** de cada pieza —alta, asignación y venta— se conservan y se muestran en su renglón.
 
 ### Campos obligatorios y opcionales
 
