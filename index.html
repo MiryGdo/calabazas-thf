@@ -410,13 +410,14 @@ textarea{min-height:64px;resize:vertical}
   <div class="tarjeta">
     <h2>Exportar</h2>
     <div class="acciones-exp">
-      <button class="btn btn-primario" onclick="exportarExcel()">Descargar Excel</button>
+      <button class="btn btn-primario" onclick="exportarEntrega()">Excel de entrega</button>
+      <button class="btn btn-sec" onclick="exportarExcel()">Excel completo</button>
       <button class="btn btn-sec" onclick="exportarFotos()">Descargar fotos</button>
       <button class="btn btn-sec" onclick="respaldar()">Crear respaldo</button>
       <button class="btn btn-sec" onclick="document.getElementById('in-respaldo').click()">Cargar respaldo</button>
     </div>
     <input type="file" id="in-respaldo" accept=".json" class="oculto">
-    <div class="nota">El Excel sale con las columnas del Maestro de Piezas en el mismo orden, listo para pegar.</div>
+    <div class="nota"><b>Excel de entrega:</b> hoja corta para dejar mercancía en consignación, con el total a deber. Respeta los filtros que tengas puestos arriba, así que filtra por lugar y fecha antes de descargarlo.<br><b>Excel completo:</b> las 38 columnas del Maestro de Piezas, listo para pegar en tu libro de análisis.</div>
   </div>
 </section>
 
@@ -451,16 +452,19 @@ textarea{min-height:64px;resize:vertical}
 <script>
 /* ===================== catálogos ===================== */
 const TAMANOS=[
- {t:'0',l:'A',cm:'5–6.5 cm',pub:55, pts:24, b:[5,6.5],  a:[3,4],   c:[13,15]},
- {t:'1',l:'B',cm:'6–8 cm',  pub:100,pts:40, b:[6,8],    a:[4,5],   c:[19,21]},
- {t:'2',l:'C',cm:'9–11.5 cm',pub:130,pts:56, b:[9,11.5], a:[5,7],   c:[25,33]},
- {t:'3',l:'D',cm:'12–15 cm',pub:145,pts:72, b:[12,15],  a:[7,9],   c:[37,43]},
- {t:'5',l:'E',cm:'16–22 cm',pub:400,pts:120,b:[16,22],  a:[9,11],  c:[48,55]},
- {t:'6',l:'F',cm:'23–25 cm',pub:520,pts:140,b:[23,25],  a:[11,14], c:[58,65]},
- {t:'7',l:'G',cm:'26–34 cm',pub:920,pts:160,b:[26,34],  a:[14,22], c:[71,91]},
- {t:'8',l:'H',cm:'35–42 cm',pub:1200,pts:184,b:[35,42], a:[22,31], c:[100,116]},
- {t:'JUEGO DE 3',l:'I',cm:'tallas 7, 6 y 5',pub:1320,pts:null,b:[16,25],a:[20,30],c:[44,72]}
+ {t:'0',l:'A',cm:'5–6.5 cm',  may:45,  pub:55,   cdmx:65,   pts:24, sinarmar:5,  b:[5,6.5],  a:[3,4],   c:[13,15]},
+ {t:'1',l:'B',cm:'6–8 cm',    may:85,  pub:105,  cdmx:115,  pts:40, sinarmar:8,  b:[6,8],    a:[4,5],   c:[19,21]},
+ {t:'2',l:'C',cm:'9–11.5 cm', may:115, pub:140,  cdmx:155,  pts:56, sinarmar:11, b:[9,11.5], a:[5,7],   c:[25,33]},
+ {t:'3',l:'D',cm:'12–15 cm',  may:165, pub:200,  cdmx:220,  pts:72, sinarmar:13, b:[12,15],  a:[7,9],   c:[37,43]},
+ {t:'4',l:'E',cm:'16–22 cm',  may:350, pub:430,  cdmx:475,  pts:120,sinarmar:16, b:[16,22],  a:[9,11],  c:[48,55]},
+ {t:'5',l:'F',cm:'23–25 cm',  may:450, pub:550,  cdmx:605,  pts:140,sinarmar:18, b:[23,25],  a:[11,14], c:[58,65]},
+ {t:'6',l:'G',cm:'26–34 cm',  may:800, pub:985,  cdmx:1085, pts:160,sinarmar:35, b:[26,34],  a:[14,22], c:[71,91]},
+ {t:'7',l:'H',cm:'35–42 cm',  may:1025,pub:1260, cdmx:1385, pts:184,sinarmar:45, b:[35,42],  a:[22,31], c:[100,116]},
+ {t:'JUEGO DE 3',l:'I',cm:'tallas 6, 5 y 4',may:1125,pub:1385,cdmx:1524,pts:null,sinarmar:null,b:[16,25],a:[20,30],c:[44,72]}
 ];
+// La LETRA del código es la medida física y nunca cambia. El número de talla sí puede
+// renumerarse; por eso el tipo siempre se deduce de la letra, no al revés.
+const PORLETRA={}; TAMANOS.forEach(t=>PORLETRA[t.l]=t);
 const COLORES=[
  ['BLANCO','BLANCOS Y CRUDOS'],['HUESO','BLANCOS Y CRUDOS'],['CRUDO','BLANCOS Y CRUDOS'],
  ['ARENA','NEUTROS CÁLIDOS'],['PAJA','NEUTROS CÁLIDOS'],['BEIGE','NEUTROS CÁLIDOS'],['CAMEL','NEUTROS CÁLIDOS'],
@@ -897,7 +901,8 @@ function aplicarAccion(){
 function editar(et){
   const p=piezas.find(x=>x.etiqueta===et); if(!p) return;
   editando=et; verVista('captura');
-  document.querySelectorAll('input[name="tam"]').forEach(r=>{r.checked=(r.value===p.tipo)});
+  const lE=letraDe(p.etiqueta); const dE=lE?PORLETRA[lE]:null;
+  document.querySelectorAll('input[name="tam"]').forEach(r=>{r.checked=(r.value===(dE?dE.t:p.tipo))});
   $('f-codigo').value=p.etiqueta;
   $('f-temporada').value=p.etiqueta.slice(0,2)==='25'?'25':'26';
   $('f-color').value=p.color; $('f-textura').value=p.textura;
@@ -1013,7 +1018,7 @@ async function sincronizar(avisar){
   if(sincronizando) return;
   if(!navigator.onLine){ if(avisar) toast('Sin internet · se subirá sola cuando vuelva'); pintarNube(); return; }
   sincronizando=true; pintarNube();
-  let subidas=0, bajadas=0, fallo=false;
+  let subidas=0, bajadas=0, fallo=false, migradas=0;
   try{
     // borrados
     for(const et of borradas.slice()){
@@ -1048,11 +1053,20 @@ async function sincronizar(avisar){
         piezas=piezas.filter(x=>x.etiqueta!==p.etiqueta); quitarDeDB(p.etiqueta);
       });
       ultimaSync=new Date().toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit'});
+      piezas.forEach(p=>{
+        const l=letraDe(p.etiqueta); const d=l?PORLETRA[l]:null;
+        if(d && p.tipo!==d.t){ p.tipo=d.t; p.actualizada_en=new Date().toISOString(); p.pendiente=true; persistir(p); migradas++; }
+      });
     } else fallo=true;
   }catch(e){ fallo=true; }
   sincronizando=false; pintarNube(); pintarContadores();
   if(!$('v-inventario').classList.contains('oculto')) pintarLista();
   if(!editando) refrescarCodigo();
+  if(migradas){
+    toast(migradas+(migradas===1?' pieza corregida':' piezas corregidas')+' por renumeración de tallas');
+    setTimeout(()=>sincronizar(false),400);   // una segunda pasada sube las corregidas
+    return;
+  }
   if(avisar){
     if(fallo) toast('Hubo un problema al sincronizar');
     else toast('Listo · '+subidas+' subidas, '+bajadas+' actualizadas');
@@ -1080,6 +1094,77 @@ async function exportarExcel(){
   XLSX.writeFile(wb,'THF_captura_calabazas_'+hoyISO()+'.xlsx');
   toast('Excel descargado');
 }
+async function exportarEntrega(){
+  const vis=filtrar();
+  if(!vis.length){ toast('No hay piezas que coincidan con los filtros'); return; }
+  try{ if(!window.XLSX) await cargarScript('https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js'); }
+  catch(e){ toast('Necesitas conexión para crear el Excel'); return; }
+
+  const lugares=[...new Set(vis.map(p=>p.canal))];
+  const lugar = lugares.length===1 ? lugares[0] : 'VARIOS LUGARES';
+  const orden = vis.slice().sort((a,b)=>{
+    const fa=(a.fecha_asignacion||'')+a.etiqueta, fb=(b.fecha_asignacion||'')+b.etiqueta;
+    return fa<fb?-1:1;
+  });
+
+  const enc=['FECHA DE ASIGNACIÓN','ETIQUETA','TAMAÑO','LETRA','MEDIDA (BASE)','LUGAR ASIGNADO',
+             'PRECIO MAYORISTA','PRECIO PÚBLICO PACHUCA','PRECIO PÚBLICO CDMX','A DEBER (MAYORISTA)'];
+  const filas=orden.map(p=>{
+    const d=datosTam(p.tipo)||{};
+    return [p.fecha_asignacion||'', p.etiqueta, p.tipo, (d.l||''), (d.cm||''), p.canal,
+            d.may??'', d.pub??'', d.cdmx??'', d.may??''];
+  });
+  const totMay =orden.reduce((t,p)=>t+((datosTam(p.tipo)||{}).may ??0),0);
+  const totPub =orden.reduce((t,p)=>t+((datosTam(p.tipo)||{}).pub ??0),0);
+  const totCdmx=orden.reduce((t,p)=>t+((datosTam(p.tipo)||{}).cdmx??0),0);
+
+  const hoy=hoyISO();
+  const aoa=[
+    ["THE HALFLING'S FINDS · NOTA DE ENTREGA EN CONSIGNACIÓN"],
+    ['Lugar: '+lugar, '', 'Fecha del documento: '+hoy, '', 'Piezas entregadas: '+orden.length],
+    [],
+    enc,
+    ...filas,
+    [],
+    ['','','','','','TOTALES', totMay, totPub, totCdmx, totMay],
+    [],
+    ['TOTAL A DEBER POR LA MERCANCÍA ENTREGADA (a precio mayorista):','','', totMay],
+    [],
+    ['CONDICIONES'],
+    ['1. Al vender una pieza se desprende su talón y se conserva para el corte.'],
+    ['2. En el corte se paga cada talón entregado a precio mayorista.'],
+    ['3. La pieza que no se vendió se devuelve con su talón puesto y no se cobra.'],
+    ['4. La pieza sin talón y sin devolución se considera pérdida y se paga igual.'],
+    ['5. La pieza dañada se devuelve con su talón y se registra como dañada.'],
+    [],
+    ['Entrega: ____________________________','','','Recibe: ____________________________']
+  ];
+
+  const ws=XLSX.utils.aoa_to_sheet(aoa);
+  ws['!cols']=[{wch:20},{wch:12},{wch:9},{wch:8},{wch:16},{wch:20},{wch:14},{wch:20},{wch:18},{wch:20}];
+  ws['!merges']=[{s:{r:0,c:0},e:{r:0,c:9}}];
+  const prim=4, ult=3+filas.length;
+  for(let r=prim;r<=ult;r++){
+    for(const c of [6,7,8,9]){
+      const ref=XLSX.utils.encode_cell({r:r,c:c});
+      if(ws[ref]&&typeof ws[ref].v==='number') ws[ref].z='"$"#,##0';
+    }
+  }
+  const filaTot=5+filas.length;
+  for(const c of [6,7,8,9]){
+    const ref=XLSX.utils.encode_cell({r:filaTot,c:c});
+    if(ws[ref]) ws[ref].z='"$"#,##0';
+  }
+  const refDeber=XLSX.utils.encode_cell({r:filaTot+2,c:3});
+  if(ws[refDeber]) ws[refDeber].z='"$"#,##0';
+
+  const wb=XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb,ws,'ENTREGA');
+  const etq=lugar.replace(/[^A-Za-zÁÉÍÓÚÑáéíóúñ0-9]+/g,'_');
+  XLSX.writeFile(wb,'THF_entrega_'+etq+'_'+hoy+'.xlsx');
+  toast(orden.length+' piezas · $'+totMay.toLocaleString('es-MX')+' a deber');
+}
+
 async function exportarFotos(){
   const con=piezas.filter(p=>p.foto);
   if(!con.length){toast('No hay fotos guardadas en este dispositivo');return}
@@ -1114,6 +1199,29 @@ $('in-respaldo').addEventListener('change',e=>{
   r.readAsText(f);
 });
 
+/* ===================== migración por letra ===================== */
+function letraDe(et){ return (typeof et==='string' && et.length>3) ? et.charAt(3).toUpperCase() : null; }
+function migrarTipos(){
+  let n=0;
+  piezas.forEach(p=>{
+    const l=letraDe(p.etiqueta); if(!l) return;
+    const d=PORLETRA[l]; if(!d) return;
+    if(p.tipo!==d.t){
+      p.tipo=d.t;
+      p.actualizada_en=new Date().toISOString();
+      p.pendiente=true;
+      persistir(p); n++;
+    }
+  });
+  if(n){
+    toast(n+(n===1?' pieza corregida':' piezas corregidas')+' por renumeración de tallas');
+    pintarContadores(); pintarNube();
+    if(!$('v-inventario').classList.contains('oculto')) pintarLista();
+    if(sesion) sincronizar(false);
+  }
+  return n;
+}
+
 /* ===================== arranque ===================== */
 (async function(){
   construir();
@@ -1121,7 +1229,7 @@ $('in-respaldo').addEventListener('change',e=>{
   sesion=leerLocal('thf_sesion')||null;
   borradas=leerLocal('thf_borradas')||[];
   await cargarLocales();
-  pintarSesion(); refrescarCodigo(); pintarContadores(); pintarFoto(); pintarNube(); revisarPlegables();
+  pintarSesion(); migrarTipos(); refrescarCodigo(); pintarContadores(); pintarFoto(); pintarNube(); revisarPlegables();
   if(sesion) sincronizar(false);
   relojSync=setInterval(()=>{ if(sesion && navigator.onLine && !document.hidden) sincronizar(false); },60000);
 })();

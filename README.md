@@ -31,7 +31,7 @@ Este sistema registra cada pieza como un individuo, con su código propio, y gua
 ```
 26-A001
 │  │ └── consecutivo dentro de esa talla
-│  └──── letra de la talla (A = tipo 0, B = tipo 1 … H = tipo 8, I = juego de 3)
+│  └──── letra de la talla (A = tipo 0, B = tipo 1 … H = tipo 7, I = juego de 3)
 └─────── temporada
 ```
 
@@ -41,19 +41,21 @@ El año permite distinguir de un vistazo el inventario rezagado del nuevo. Para 
 
 ### Las tallas
 
-| Letra | Tipo | Base (cm) | Altura (cm) | Contorno (cm) | Puntos |
-|---|---|---|---|---|---|
-| A | 0 | 5 – 6.5 | 3 – 4 | 13 – 15 | 24 |
-| B | 1 | 6 – 8 | 4 – 5 | 19 – 21 | 40 |
-| C | 2 | 9 – 11.5 | 5 – 7 | 25 – 33 | 56 |
-| D | 3 | 12 – 15 | 7 – 9 | 37 – 43 | 72 |
-| E | 5 | 16 – 22 | 9 – 11 | 48 – 55 | 120 |
-| F | 6 | 23 – 25 | 11 – 14 | 58 – 65 | 140 |
-| G | 7 | 26 – 34 | 14 – 22 | 71 – 91 | 160 |
-| H | 8 | 35 – 42 | 22 – 31 | 100 – 116 | 184 |
-| I | Juego de 3 | 16 – 25 | 20 – 30 | 44 – 72 | variado |
+| Letra | Tipo | Base (cm) | Altura (cm) | Contorno (cm) | Puntos | Mayorista | Público PCH | Público CDMX |
+|---|---|---|---|---|---|---|---|---|
+| A | 0 | 5 – 6.5 | 3 – 4 | 13 – 15 | 24 | $45 | $55 | $65 |
+| B | 1 | 6 – 8 | 4 – 5 | 19 – 21 | 40 | $85 | $105 | $115 |
+| C | 2 | 9 – 11.5 | 5 – 7 | 25 – 33 | 56 | $115 | $140 | $155 |
+| D | 3 | 12 – 15 | 7 – 9 | 37 – 43 | 72 | $165 | $200 | $220 |
+| E | 4 | 16 – 22 | 9 – 11 | 48 – 55 | 120 | $350 | $430 | $475 |
+| F | 5 | 23 – 25 | 11 – 14 | 58 – 65 | 140 | $450 | $550 | $605 |
+| G | 6 | 26 – 34 | 14 – 22 | 71 – 91 | 160 | $800 | $985 | $1,085 |
+| H | 7 | 35 – 42 | 22 – 31 | 100 – 116 | 184 | $1,025 | $1,260 | $1,385 |
+| I | Juego de 3 | 16 – 25 | 20 – 30 | 44 – 72 | variado | $1,125 | $1,385 | $1,524 |
 
-El **tipo 4 fue retirado**: ya no se teje. El juego de 3 se compone de las tallas 7, 6 y 5.
+Se retiró una talla intermedia y **las demás se renumeraron**. El juego de 3 se compone de las tallas 6, 5 y 4.
+
+**La letra del código es la referencia estable**: identifica la medida física y nunca cambia. El número de talla puede renumerarse; por eso la app deduce el tipo a partir de la letra, no al revés. Si una renumeración vuelve a ocurrir, la app corrige sola las piezas ya registradas al abrirla, sin tocar sus códigos.
 
 Al capturar, si una medida real cae fuera del rango de la talla elegida, la app lo avisa sin impedir el guardado — sirve para detectar errores de clasificación, no para bloquear.
 
@@ -132,6 +134,8 @@ El indicador de la parte superior muestra el estado: verde sincronizado, amarill
 El botón **Descargar Excel** genera un archivo con las 38 columnas del *Maestro de Piezas* en el mismo orden. Se copia el bloque de filas y se pega en el libro de análisis a partir de la fila 5.
 
 Las columnas calculadas (familia de color, puntos, costos derivados, precio sugerido, días en piso, márgenes) salen vacías a propósito: las fórmulas del libro las llenan al pegar.
+
+**Excel de entrega** genera una nota de consignación corta: fecha de asignación, etiqueta, tamaño y letra, lugar, los tres precios y el total a deber a precio mayorista, más las condiciones y las líneas de firma. Respeta los filtros activos de la lista, de modo que filtrando por lugar y fecha se obtiene exactamente la entrega de ese día.
 
 También se pueden descargar todas las fotos en un zip, cada una nombrada con su código.
 
